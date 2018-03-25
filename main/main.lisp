@@ -9,7 +9,7 @@
 (defun rdf-stop () (if (and *server-ref* (hunchentoot:started-p *server-ref*))
                        (hunchentoot:stop *server-ref*) nil))
 
-(defmacro define-app-req (uri params callback)
+(defmacro define-app-req (uri params &rest body)
   "Listen for an app request. An 'app request' is a POST request with json
   parameters. These are formatted automatically for transformation from
   JSON to lisp object.
@@ -18,11 +18,10 @@
   bound to it - i.e. \"/login\". No URI arguments - use params for this.
 
   The second argument, params, is a plist defining the parameters. See
-  the Params Form section below.
+  the Params Form section below. The keys of the plist are put into scope for
+  the body forms.
 
-  The third argument, callback, is a function which is called with the given
-  parameters. The parameters are not given in a plist, and are instead jsut
-  given in the same order which they're specified in the params plist.
+  The third and following forms are called with the params named in scope.
 
   ## Params form
 
@@ -40,8 +39,6 @@
   ;; 'password' keys in the input json object.
   (:username nil :password nil) 
 
-  The parameters will be passed into the callback in the same order (not in a plist).
-
   # Allowed arbitrary values
   Arbitrary lisp values can be sent. Aside from defined entities, the allowed
   types are:
@@ -55,21 +52,23 @@
   The to-json function is used for json ser.
 
   # Returning data
-  The value of the callback will be serialised into JSON and returned. The app
+  The value of the body forms will be serialised into JSON and returned. The app
   framework will deal with serialisation / deserialisation - either an entity of
   one of the allowed arbitrary types is allowed.
 
   # Examples
   ;; Passing in username & password
   (app-req \"/login\" (:username nil :password nil)
-    (lambda (u p) (if (check-username-password u p) T NIL)))
+    (if (check-username-password username password) T NIL))
 
-  ;; Passing in a user-settings entity (whatever that's defined as)
+  ;; Pass through user-settings entity to the update-user-settings function
   (app-req \"/update-user-settings\" (:settings 'user-settings)
-    (lambda (s) (update-user-settings s)))"
+    (update-user-settings settings))"
   `(hunchentoot:define-easy-handler (,(intern uri) :uri ,uri :default-request-type :POST) ()
     (setf (hunchentoot:content-type*) "application/json")
     (let ((data (from-json (string (hunchentoot:raw-post-data :force-text t)))))
       (if (not (typep data 'list)) (error 'error "Error - app req param is not an object"))
       (if (not (is-plist data)) (error 'error "Error - app req param is not an object"))
-      (to-json (apply ,callback (loop for (k v) on ,params by #'cddr collect (getf data k)))))))
+      (let ,(loop for (k v) on params by #'cddr collect
+                 (list (intern (string k)) `(getf data ,k)))
+        (to-json (progn ,@body))))))
