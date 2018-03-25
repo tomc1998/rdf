@@ -52,6 +52,8 @@
     - plist (Serialised as a JSON object)
     - list (Serialised as a JSON array)
 
+  The to-json function is used for json ser.
+
   # Returning data
   The value of the callback will be serialised into JSON and returned. The app
   framework will deal with serialisation / deserialisation - either an entity of
@@ -67,5 +69,5 @@
     (lambda (s) (update-user-settings s)))"
   (hunchentoot:define-easy-handler (uri :uri uri) ()
     (setf (hunchentoot:content-type*) "application/json")
-    (funcall callback))
+    (to-json (funcall callback)))
   )

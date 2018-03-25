@@ -14,14 +14,17 @@
 
 (asdf:defsystem rdf
   :description "A rapid development web framework"
-  :author "Tom <thomascheng1998@gmail.com>"
   :depends-on (:corm :hunchentoot)
-  :components ((:file "main/main")))
+  :components ((:file "main/json-ser")
+               (:file "main/main"
+                      :depends-on ("main/json-ser")
+                      )))
 
 (asdf:defsystem tests
   :depends-on (:rdf :prove)
   :defsystem-depends-on (:prove-asdf)
-  :components ((:test-file "test/main"))
+  :components ((:test-file "test/main")
+               (:test-file "test/json"))
   )
 
 (asdf:defsystem rdf-full-example

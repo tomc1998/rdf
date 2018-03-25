@@ -1,7 +1,12 @@
+(in-package :rdf)
+
+(rdf-stop)
+
 ;; Test start / stop
 (prove:plan 4)
-(prove:ok (rdf:rdf-start))
-(prove:ok (not (rdf:rdf-start)))
-(prove:ok (rdf:rdf-stop))
-(prove:ok (not (rdf:rdf-stop)))
+(prove:ok (rdf-start))
+(prove:ok (not (rdf-start)))
+(prove:ok (rdf-stop))
+(prove:ok (not (rdf-stop)))
 (prove:finalize)
+
