@@ -6,7 +6,7 @@
   (:use "COMMON-LISP")
   (:export :rdf-start
            :rdf-stop
-           :app-req
+           :define-app-req
            :*server-ref*))
 
 (defpackage :rdf-full-example

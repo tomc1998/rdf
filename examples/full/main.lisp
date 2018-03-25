@@ -2,4 +2,4 @@
 
 (defun main () 
   (rdf:rdf-start)
-  (rdf:app-req "/hello" () (lambda () "Hello, World!")))
+  (rdf:define-app-req "/hello" () (lambda () "Hello, World!")))

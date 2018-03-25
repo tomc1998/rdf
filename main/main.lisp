@@ -9,7 +9,7 @@
 (defun rdf-stop () (if (and *server-ref* (hunchentoot:started-p *server-ref*))
                        (hunchentoot:stop *server-ref*) nil))
 
-(defun app-req (uri params callback)
+(defun define-app-req (uri params callback)
   "Listen for an app request. An 'app request' is a POST request with json
   parameters. These are formatted automatically for transformation from
   JSON to lisp object.
@@ -69,5 +69,6 @@
     (lambda (s) (update-user-settings s)))"
   (hunchentoot:define-easy-handler (uri :uri uri :default-request-type :POST) ()
     (setf (hunchentoot:content-type*) "application/json")
-    (to-json (funcall callback))
-    (hunchentoot:raw-post-data :request hunchentoot:*request*)))
+    (let ((data (from-json (string (hunchentoot:raw-post-data :force-text t)))))
+      (to-json (funcall callback))
+      (format nil "~{~a~^ ~}~a" data #\Newline))))
