@@ -31,7 +31,7 @@
          (format nil "{~{~a~^,~}}"
                  ;; Collect all key / value pairs, convert value to json
                  (loop for (k v) on o by #'cddr
-                      collect (format nil "~a:~a" (string-downcase k) (to-json v))))
+                      collect (format nil "\"~a\":~a" (string-downcase k) (to-json v))))
          (format nil "[~{~a~^,~}]" (loop for x in o collect (to-json x)))))
     ((eq o t) "true")
     ((eq o nil) "false")

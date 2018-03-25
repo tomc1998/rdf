@@ -1,5 +1,6 @@
 (ql:quickload :prove)
 (ql:quickload :hunchentoot)
+(ql:quickload :cl-json)
 
 (defpackage :rdf
   (:use "COMMON-LISP")
@@ -14,13 +15,14 @@
 
 (asdf:defsystem rdf
   :description "A rapid development web framework"
-  :depends-on (:corm :hunchentoot)
+  :depends-on (:corm :hunchentoot :cl-json)
   :components ((:file "main/json-ser")
+               (:file "main/json-deser")
                (:file "main/main"
-                      :depends-on ("main/json-ser")
+                      :depends-on ("main/json-ser" "main/json-deser")
                       )))
 
-(asdf:defsystem tests
+(asdf:defsystem rdf-tests
   :depends-on (:rdf :prove)
   :defsystem-depends-on (:prove-asdf)
   :components ((:test-file "test/main")
