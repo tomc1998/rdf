@@ -65,4 +65,7 @@
   ;; Passing in a user-settings entity (whatever that's defined as)
   (app-req \"/update-user-settings\" (:settings 'user-settings)
     (lambda (s) (update-user-settings s)))"
+  (hunchentoot:define-easy-handler (uri :uri uri) ()
+    (setf (hunchentoot:content-type*) "application/json")
+    (funcall callback))
   )

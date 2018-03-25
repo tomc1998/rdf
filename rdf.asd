@@ -5,15 +5,16 @@
   (:use "COMMON-LISP")
   (:export :rdf-start
            :rdf-stop
-           :*server-ref*)
-  )
-(in-package :rdf)
+           :app-req
+           :*server-ref*))
+
+(defpackage :rdf-full-example
+  (:use "COMMON-LISP")
+  (:export :main))
 
 (asdf:defsystem rdf
-  :description "An example HTTP server in lisp"
-  :version "0.0.1"
+  :description "A rapid development web framework"
   :author "Tom <thomascheng1998@gmail.com>"
-  :licence "Public Domain"
   :depends-on (:corm :hunchentoot)
   :components ((:file "main/main")))
 
@@ -22,3 +23,8 @@
   :defsystem-depends-on (:prove-asdf)
   :components ((:test-file "test/main"))
   )
+
+(asdf:defsystem rdf-full-example
+  :author "Tom <thomascheng1998@gmail.com>"
+  :depends-on (:rdf)
+  :components ((:file "examples/full/main")))
