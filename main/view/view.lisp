@@ -74,8 +74,9 @@
   return an altered expanded symbol which finds the 'child' of the given object.
   For example, if the symbol is {foo.bar.baz}, replace the given expanded symbol
   (which will be something like ($ (<expr to get foo>)) with ($ (@ (<expr to get
-  foo>) bar baz)). If the first element of the given expanded isn't $, this
-  simply returns the given expanded value with no transformation."
+  foo>) bar baz)). If the first element of the given expanded isn't $, or if the
+  symbol contains no '.', this simply returns the given expanded value with no
+  transformation."
   ;; Check that expanded is a cons with $ as the car
   (if (or (not (consp expanded)) (not (eq '$ (car expanded))))
       (return-from add-chain-from-interpolation-symbol expanded))
@@ -89,7 +90,8 @@
          (splits-symbols (loop for split in splits collect (intern split)))
          ;; Created the altered ps expression
          (altered `($ (@ ,(second expanded) ,@(cdr splits-symbols)))))
-    altered))
+    ;; Only return altered if there was more than 1 split (i.e. symbol contained a '.')
+    (if (> (length splits) 1) altered expanded)))
 
 (defun expand-with-symbol-table (template symbol-table)
   (cond
@@ -103,13 +105,13 @@
            (char= #\@ (char (string template) 1))))
      ;; Lookup the non-@ sign symbol in the table, then call that function
      ;; inside a lambda accepting the event
-     (let ((expanded (getf symbol-table (intern (remove #\@ (string template)) :keyword))))
-       (if expanded `($ (lambda (e) (,expanded vnode e))) template)))
+     (let ((expanded (getf symbol-table (get-root-interpolation-symbol (remove #\@ (string template))))))
+       (if expanded (add-chain-from-interpolation-symbol `($ (lambda (e) (,expanded vnode e))) template) template)))
     ;; If we're not an event listener symbol, we might just be a normal
     ;; interpolation - check for this
     ((typep template 'symbol)
-     (let ((expanded (getf symbol-table (intern (string template) :keyword))))
-       (if expanded expanded template)))
+     (let ((expanded (getf symbol-table (get-root-interpolation-symbol (string template)))))
+       (if expanded (add-chain-from-interpolation-symbol expanded template) template)))
     (t template)))
 
 (defun expand-interpolations (template fields)

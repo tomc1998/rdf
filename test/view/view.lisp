@@ -1,5 +1,12 @@
 (in-package :rdf)
 
+(prove:plan 2)
+(prove:is (expand-with-symbol-table '(div {foo}) '(:{foo} ($ (@ vnode state foo))))
+          '(div ($ (@ vnode state foo))))
+(prove:is (expand-with-symbol-table '(div {foo.bar}) '(:{foo} ($ (@ vnode state foo))))
+          '(div ($ (@ (@ vnode state foo) bar))))
+(prove:finalize)
+
 (prove:plan 6)
 (prove:is (get-root-interpolation-symbol '{asd.fgh}) :{asd} "Getting the root of an interpolation should work")
 (prove:is (get-root-interpolation-symbol '{asd}) :{asd} "Getting the root of an interpolation should work")
