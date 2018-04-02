@@ -14,7 +14,7 @@
            :*server-ref*))
 
 (defpackage :rdf-full-example
-  (:use "COMMON-LISP")
+  (:use "PARENSCRIPT" "COMMON-LISP")
   (:export :main))
 
 (asdf:defsystem rdf
