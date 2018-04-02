@@ -53,6 +53,44 @@
                   (expand-all-control-structures item)))))
     (t template)))
 
+(defun get-root-interpolation-symbol (symbol)
+  "Given a symbol like {asd.asd}, returns (and interns if necessary) the keyword
+{asd}. Just returns the input if the input wasn't surrounded with {}."
+  (let* ((s (string symbol))
+         (ix (position #\. s)))
+    ;; Check that s is surrounded by {}
+    (if (not (and (char= #\} (char s (1- (length s)))) (char= #\{ (char s 0))))
+        (return-from get-root-interpolation-symbol symbol))
+    ;; Check that s has a '.' in it
+    (if (not ix) (return-from get-root-interpolation-symbol (intern s :keyword)))
+    ;; Extract the root
+    (let* ((root (subseq s 1 ix))
+           (surrounded (format nil "{~a}" root)))
+      ;; Intern as a keyword
+      (intern surrounded :keyword))))
+
+(defun add-chain-from-interpolation-symbol (expanded symbol)
+  "Given the expanded result of a symbol and the symbol it was expanded from,
+  return an altered expanded symbol which finds the 'child' of the given object.
+  For example, if the symbol is {foo.bar.baz}, replace the given expanded symbol
+  (which will be something like ($ (<expr to get foo>)) with ($ (@ (<expr to get
+  foo>) bar baz)). If the first element of the given expanded isn't $, this
+  simply returns the given expanded value with no transformation."
+  ;; Check that expanded is a cons with $ as the car
+  (if (or (not (consp expanded)) (not (eq '$ (car expanded))))
+      (return-from add-chain-from-interpolation-symbol expanded))
+  (let* ((s (string symbol))
+         ;; Unwrap the symbol if it's surrounded with {}
+         (unwrapped (if (and (char= #\} (char s (1- (length s)))) (char= #\{ (char s 0)))
+                        (subseq s 1 (1- (length s)))))
+         ;; Split by '.'
+         (splits (str:split "." unwrapped))
+         ;; Intern splits
+         (splits-symbols (loop for split in splits collect (intern split)))
+         ;; Created the altered ps expression
+         (altered `($ (@ ,(second expanded) ,@(cdr splits-symbols)))))
+    altered))
+
 (defun expand-with-symbol-table (template symbol-table)
   (cond
     ((typep template 'cons) (loop for child in template collect
@@ -66,7 +104,6 @@
      ;; Lookup the non-@ sign symbol in the table, then call that function
      ;; inside a lambda accepting the event
      (let ((expanded (getf symbol-table (intern (remove #\@ (string template)) :keyword))))
-       expanded
        (if expanded `($ (lambda (e) (,expanded vnode e))) template)))
     ;; If we're not an event listener symbol, we might just be a normal
     ;; interpolation - check for this

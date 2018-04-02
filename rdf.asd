@@ -1,4 +1,5 @@
 (ql:quickload :prove)
+(ql:quickload :str)
 (ql:quickload :hunchentoot)
 (ql:quickload :cl-json)
 (ql:quickload :parenscript)
@@ -18,7 +19,7 @@
 
 (asdf:defsystem rdf
   :description "A rapid development web framework"
-  :depends-on (:corm :hunchentoot :cl-json :parenscript)
+  :depends-on (:corm :hunchentoot :cl-json :parenscript :str)
   :components ((:file "main/json-ser")
                (:file "main/json-deser")
                (:file "main/view/view")
@@ -30,7 +31,8 @@
   :depends-on (:rdf :prove)
   :defsystem-depends-on (:prove-asdf)
   :components ((:test-file "test/main")
-               (:test-file "test/json")))
+               (:test-file "test/json")
+               (:test-file "test/view/view")))
 
 (asdf:defsystem rdf-full-example
   :author "Tom <thomascheng1998@gmail.com>"
