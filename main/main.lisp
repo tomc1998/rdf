@@ -1,7 +1,25 @@
 (in-package :rdf)
 
 (defvar *server-ref* nil)
+
+(defun setup-view-routes ()
+  (hunchentoot:define-easy-handler (index :uri "/" :default-request-type :GET) ()
+    (setf (hunchentoot:content-type*) "text/html")
+    "<html>
+      <head>
+      </head>
+      <body>
+        <div id=\"content\"></div>
+        <script src=\"//unpkg.com/mithril/mithril.js\"></script>
+        <script src=\"/rdf/app.js\"></script>
+      </body>
+    </html>")
+  (hunchentoot:define-easy-handler (app-js :uri "/rdf/app.js" :default-request-type :GET) ()
+    (setf (hunchentoot:content-type*) "text/html")
+    (render-app-js)))
+
 (defun rdf-start ()
+  (setup-view-routes)
   (if (and *server-ref* (hunchentoot:started-p *server-ref*)) nil
       (progn (setf *server-ref* (make-instance 'hunchentoot:easy-acceptor :port 4242))
              (hunchentoot:start *server-ref*))))
