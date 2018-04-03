@@ -15,7 +15,7 @@
       </body>
     </html>")
   (hunchentoot:define-easy-handler (app-js :uri "/rdf/app.js" :default-request-type :GET) ()
-    (setf (hunchentoot:content-type*) "text/html")
+    (setf (hunchentoot:content-type*) "application/javascript")
     (render-app-js)))
 
 (defun rdf-start ()

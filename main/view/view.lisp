@@ -125,6 +125,7 @@
        ;; Create a plist of all the state / computed / at... with ps expansions
        (symbol-table
         (append
+         '(:{$store} ($ (@ window store)))
          (loop for a in attrs
             append (list
                     (intern (format nil "{~a}" a) :keyword)
@@ -241,24 +242,24 @@
           (loop for (name params body) in methods
              collect `(,name (lambda (vnode ,@params) ,(expand-all-ps-injects
                                                         (expand-interpolations body fields)))))))
-    `(progn
-       ,@(loop for (k v) in computed-decl collect `(var ,k ,v))
-       ,@(loop for (k v) in method-decl collect `(var ,k ,v))
-       (create
-        ,@(loop for (k v) in computed-decl append (list k k))
-        ,@(loop for (k v) in method-decl append (list k k))
-        oninit (lambda (vnode)
-                 ,@attr-state-decl
-                 ,@(loop for (k v) in state collect `(setf (@ vnode state ,k) ,v)))
-        view
-        (lambda (vnode)
-          ,(let*
-            (;; Expand out all control cons
-             (cc-expanded (expand-all-control-structures template))
-             ;; Replace {} symbols with actual vnode accesses
-             ({}-expanded (expand-interpolations cc-expanded fields)))
-            ;; Render with the symbol table (expand control structures first)
-            (render {}-expanded)))))))
+    `((lambda ()
+        ,@(loop for (k v) in computed-decl collect `(var ,k ,v))
+        ,@(loop for (k v) in method-decl collect `(var ,k ,v))
+        (create
+         ,@(loop for (k v) in computed-decl append (list k k))
+         ,@(loop for (k v) in method-decl append (list k k))
+         oninit (lambda (vnode)
+                  ,@attr-state-decl
+                  ,@(loop for (k v) in state collect `(setf (@ vnode state ,k) ,v)))
+         view
+         (lambda (vnode)
+           ,(let*
+             ( ;; Expand out all control cons
+              (cc-expanded (expand-all-control-structures template))
+              ;; Replace {} symbols with actual vnode accesses
+              ({}-expanded (expand-interpolations cc-expanded fields)))
+             ;; Render with the symbol table (expand control structures first)
+             (render {}-expanded))))))))
 
 (defun expand-all-ps-injects (e)
   "Used by try-expand-ps-inject to expand all $ inside a given block. This is
@@ -330,6 +331,14 @@ cdr, otherwise returns nil."
 
 (defparameter *comp-list* ())
 (defparameter *routes* ())
+(defparameter *init-state* ())
+
+(defun add-initial-store-state (key value)
+  "Add a key to the initial store state, and store the given PS value in it.
+  Store values can be accessed with the {$store} interpolation.
+  # Example
+  (add-initial-store-state 'count 0)"
+  (setf (getf *init-state* key) value))
 
 (defun register-component (name fields template)
   "Register a component. name should be a keywords, see defcomp for fields / template docs"
@@ -353,6 +362,9 @@ mapping routes (strings) to component names (keywords)
 (defun app (routes)
   (eval
    `(ps
+      ;; Create store
+      (setf (@ window store) (create ,@*init-state*))
+      ;; Mount mithril routes
       (let* (append (root (chain document body))
                     ,@(reverse (loop for (k v) on *comp-list* by #'cddr collect (list k v))))
         (chain m (route root "/" ,(create-routes routes)))))))

@@ -8,14 +8,16 @@
      ((a href "/#!/about") "About")
      ))
 
+  (rdf:add-initial-store-state 'home '(create count 0))
+  (rdf:add-initial-store-state 'about '(create count 0))
+
   (rdf:register-component
    :home
    '(
-     :state (count 0
-             big-object (create a 1 b 2 c 3))
-     :methods ((inc () (setf {count} (1+ {count})))))
+     :state (big-object (create a 1 b 2 c 3))
+     :methods ((inc () (setf {$store.home.count} (1+ {$store.home.count})))))
    '(div :nav (div "Hello, this is the home page.")
-     ((button onclick {@inc}) "You've pressed this button " {count} " times.")
+     ((button onclick {@inc}) "You've pressed this button " {$store.home.count} " times.")
      (br)
      "A: " {big-object.a} (br)
      "B: " {big-object.b} (br)
@@ -25,10 +27,9 @@
   (rdf:register-component
    :about
    '(
-     :state (count 0)
-     :methods ((inc () (setf {count} (1+ {count})))))
+     :methods ((inc () (setf {$store.about.count} (1+ {$store.about.count})))))
    '(div :nav (div "Hello, this is the about page. It has a much bigger button.")
-     ((button style "font-size: 30px" onclick {@inc}) "You've pressed this button " {count} " times."))))
+     ((button style "font-size: 30px" onclick {@inc}) "You've pressed this button " {$store.about.count} " times."))))
 
 (defun setup-routes ()
   (rdf:set-view-routes '(("/" home)

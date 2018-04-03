@@ -11,6 +11,7 @@
            :define-app-req
            :register-component
            :set-view-routes
+           :add-initial-store-state
            :*server-ref*))
 
 (defpackage :rdf-full-example
