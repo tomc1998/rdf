@@ -92,7 +92,10 @@
          (if (not (typep data 'list)) (error 'error "Error - app req param is not an object"))
          (if (not (is-plist data)) (error 'error "Error - app req param is not an object"))
          ;; Get the params from the data
-         (let ((params (loop for i from 0 to ,(1-(length params))
-                          collect (getf data (intern (write-to-string i) :keyword)))))
+         (let ((params-parsed
+                (loop for i from 0 to ,(1-(length params))
+                   for p in ',params collect
+                     (let ((val (getf data (intern (write-to-string i) :keyword))))
+                       (if p (error 'error "Error - entity deser not implemented") val)))))
            (hunchentoot:log-message* :INFO "~a")
-           (to-json (apply callback params)))))))
+           (to-json (apply callback params-parsed)))))))

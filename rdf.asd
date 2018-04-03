@@ -6,13 +6,21 @@
 
 (defpackage :rdf
   (:use  "PARENSCRIPT" "COMMON-LISP")
+  (:shadowing-import-from :corm :defentity :entity-already-exists :select-tree :insert-one)
   (:export :rdf-start
            :rdf-stop
            :define-app-req
            :register-component
            :set-view-routes
            :add-initial-store-state
-           :*server-ref*))
+           :*server-ref*
+
+           ;; Corm re-exports
+           :defentity
+           :entity-already-exists
+           :select-tree
+           :insert-one
+           ))
 
 (defpackage :rdf-full-example
   (:use "PARENSCRIPT" "COMMON-LISP")

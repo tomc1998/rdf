@@ -1,5 +1,9 @@
 (in-package :rdf-full-example)
 
+(defun define-entities ()
+  (rdf:defentity user ((first-name "VARCHAR(256)" :not-null) (last-name "VARCHAR(256)" :not-null)) ())
+  )
+
 (defun register-components ()
   (rdf:register-component
    :nav '(:methods
@@ -43,10 +47,12 @@
                          ("/about" about))))
 
 (defun setup-app-req ()
-  (rdf:define-app-req "/hello" (nil)
-    (lambda (name) (print (format nil "Hello, ~a" name)))))
+  (rdf:define-app-req "/hello" (user)
+    (lambda (user) (print (format nil "Hello, ~a" (slot-value user 'first-name)))))
+  )
 
 (defun main ()
+  (define-entities)
   (register-components)
   (setup-routes)
   (setup-app-req)
