@@ -14,6 +14,9 @@
 
 (define-condition malformed-to-json-input (error) ((text :initarg :text)))
 
+(defun to-json-ps (o)
+  )
+
 (defun to-json (o)
   "Serialise the lisp object 'o' to JSON. Supported types:
     - number

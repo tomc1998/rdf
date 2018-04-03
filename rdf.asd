@@ -24,8 +24,9 @@
   :components ((:file "main/json-ser")
                (:file "main/json-deser")
                (:file "main/view/view")
+               (:file "main/view/lib")
                (:file "main/main"
-                      :depends-on ("main/json-ser" "main/json-deser" "main/view/view")
+                      :depends-on ("main/json-ser" "main/json-deser" "main/view/view"  "main/view/lib")
                       )))
 
 (asdf:defsystem rdf-tests

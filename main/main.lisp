@@ -11,12 +11,17 @@
       <body>
         <div id=\"content\"></div>
         <script src=\"//unpkg.com/mithril/mithril.js\"></script>
+        <script src=\"/rdf/lib.js\"></script>
         <script src=\"/rdf/app.js\"></script>
       </body>
     </html>")
   (hunchentoot:define-easy-handler (app-js :uri "/rdf/app.js" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "application/javascript")
-    (render-app-js)))
+    (render-app-js))
+  (hunchentoot:define-easy-handler (lib-js :uri "/rdf/lib.js" :default-request-type :GET) ()
+    (setf (hunchentoot:content-type*) "application/javascript")
+    (render-lib-js))
+  )
 
 (defun rdf-start ()
   (setup-view-routes)
@@ -27,7 +32,7 @@
 (defun rdf-stop () (if (and *server-ref* (hunchentoot:started-p *server-ref*))
                        (hunchentoot:stop *server-ref*) nil))
 
-(defmacro define-app-req (uri params &rest body)
+(defmacro define-app-req (uri params callback)
   "Listen for an app request. An 'app request' is a POST request with json
   parameters. These are formatted automatically for transformation from
   JSON to lisp object.
@@ -35,16 +40,15 @@
   The first argument, uri, is a string which will have a post request listener
   bound to it - i.e. \"/login\". No URI arguments - use params for this.
 
-  The second argument, params, is a plist defining the parameters. See
-  the Params Form section below. The keys of the plist are put into scope for
-  the body forms.
+  The second argument, params, is a listdefining the parameters. See
+  the Params Form section below.
 
-  The third and following forms are called with the params named in scope.
+  The third form is the callback called when a request comes through. It must
+  accept the same amount of arguments as specified in the params form.
 
   ## Params form
 
-  The params form is a plist. The property is the name to use for the JSON
-  object, and is largely unimportant other than for documentation purposes.
+  The params form is a list of arguments to accept
   Each value is a symbol or nil:
   - If the parameter is a symbol, it's the name of an entity to parse from the
     JSON data.
@@ -52,10 +56,8 @@
     'allowed arbitrary values' section below
 
   Two example params objects is as follows:
-  (:user user) ;; This is a single param of type 'user' entity
-  ;; These are 2 params of arbitrary lisp types, parsed from the 'username' and
-  ;; 'password' keys in the input json object.
-  (:username nil :password nil) 
+  (user) ;; This is a single param of type 'user' entity
+  (nil nil) ;; These are 2 params of arbitrary lisp types.
 
   # Allowed arbitrary values
   Arbitrary lisp values can be sent. Aside from defined entities, the allowed
@@ -76,17 +78,21 @@
 
   # Examples
   ;; Passing in username & password
-  (app-req \"/login\" (:username nil :password nil)
-    (if (check-username-password username password) T NIL))
+  (app-req \"/login\" '(nil nil)
+    (lambda (username password)
+      (if (check-username-password username password) T NIL)))
 
   ;; Pass through user-settings entity to the update-user-settings function
-  (app-req \"/update-user-settings\" (:settings 'user-settings)
-    (update-user-settings settings))"
-  `(hunchentoot:define-easy-handler (,(intern uri) :uri ,uri :default-request-type :POST) ()
-    (setf (hunchentoot:content-type*) "application/json")
-    (let ((data (from-json (string (hunchentoot:raw-post-data :force-text t)))))
-      (if (not (typep data 'list)) (error 'error "Error - app req param is not an object"))
-      (if (not (is-plist data)) (error 'error "Error - app req param is not an object"))
-      (let ,(loop for (k v) on params by #'cddr collect
-                 (list (intern (string k)) `(getf data ,k)))
-        (to-json (progn ,@body))))))
+  ;; (which should take 1 parameter)
+  (app-req \"/update-user-settings\" '(user-settings) update-user-settings)"
+  `(let ((callback ,callback))
+     (hunchentoot:define-easy-handler (,(intern uri) :uri ,uri :default-request-type :POST) ()
+       (setf (hunchentoot:content-type*) "application/json")
+       (let ((data (from-json (string (hunchentoot:raw-post-data :force-text t)))))
+         (if (not (typep data 'list)) (error 'error "Error - app req param is not an object"))
+         (if (not (is-plist data)) (error 'error "Error - app req param is not an object"))
+         ;; Get the params from the data
+         (let ((params (loop for i from 0 to ,(1-(length params))
+                          collect (getf data (intern (write-to-string i) :keyword)))))
+           (hunchentoot:log-message* :INFO "~a")
+           (to-json (apply callback params)))))))
