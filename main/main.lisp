@@ -96,6 +96,6 @@
                 (loop for i from 0 to ,(1-(length params))
                    for p in ',params collect
                      (let ((val (getf data (intern (write-to-string i) :keyword))))
-                       (if p (error 'error "Error - entity deser not implemented") val)))))
+                       (if p (entity-from-json p val) val)))))
            (hunchentoot:log-message* :INFO "~a")
            (to-json (apply callback params-parsed)))))))

@@ -7,12 +7,9 @@
 (defun register-components ()
   (rdf:register-component
    :nav '(:methods
-          ((say-hello (vnode)
-            (app-req "/hello" (array (concatenate 'string
-                                                  "Tom HOME: "
-                                                  (parse-int {$store.home.count})
-                                                  "Tom ABOUT: "
-                                                  (parse-int {$store.about.count})))
+          (
+           (say-hello (vnode)
+            (app-req "/hello" (array (create first-name "Tom" last-name "Cheng"))
                      (lambda (res) (alert res))))))
    '(div
      ((a href "/#!") "Home")

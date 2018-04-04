@@ -3,10 +3,11 @@
 (ql:quickload :hunchentoot)
 (ql:quickload :cl-json)
 (ql:quickload :parenscript)
+(ql:quickload :corm)
 
 (defpackage :rdf
   (:use  "PARENSCRIPT" "COMMON-LISP")
-  (:shadowing-import-from :corm :defentity :entity-already-exists :select-tree :insert-one)
+  (:shadowing-import-from :corm :entity-already-exists :select-tree :insert-one)
   (:export :rdf-start
            :rdf-stop
            :define-app-req
@@ -16,7 +17,7 @@
            :*server-ref*
 
            ;; Corm re-exports
-           :defentity
+           :defentity ; Not actually a re-export - see entity.lisp
            :entity-already-exists
            :select-tree
            :insert-one
@@ -31,10 +32,12 @@
   :depends-on (:corm :hunchentoot :cl-json :parenscript :str)
   :components ((:file "main/json-ser")
                (:file "main/json-deser")
+               (:file "main/entity")
                (:file "main/view/view")
                (:file "main/view/lib")
                (:file "main/main"
-                      :depends-on ("main/json-ser" "main/json-deser" "main/view/view"  "main/view/lib")
+                      :depends-on ("main/json-ser" "main/json-deser"
+                      "main/view/view" "main/view/lib" "main/entity")
                       )))
 
 (asdf:defsystem rdf-tests
@@ -42,6 +45,7 @@
   :defsystem-depends-on (:prove-asdf)
   :components ((:test-file "test/main")
                (:test-file "test/json")
+               (:test-file "test/entity")
                (:test-file "test/view/view")))
 
 (asdf:defsystem rdf-full-example

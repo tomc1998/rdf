@@ -360,14 +360,17 @@ mapping routes (strings) to component names (keywords)
   `(create ,@(loop for (k v) in routes append (list k v))))
 
 (defun app (routes)
-  (eval
-   `(ps
-      ;; Create store
-      (setf (@ window store) (create ,@*init-state*))
-      ;; Mount mithril routes
-      (let* (append (root (chain document body))
-                    ,@(reverse (loop for (k v) on *comp-list* by #'cddr collect (list k v))))
-        (chain m (route root "/" ,(create-routes routes)))))))
+  (let ((ps-expr
+         `(ps
+            ;; Create store
+            (setf (@ window store) (create ,@*init-state*))
+            ;; Mount mithril routes
+            (let* (append (root (chain document body))
+                          ,@(reverse (loop for (k v) on *comp-list* by #'cddr collect (list k v))))
+              (chain m (route root "/" ,(create-routes routes)))))))
+    (hunchentoot:log-message* :INFO "~s" ps-expr)
+    (hunchentoot:log-message* :INFO "~s" (eval ps-expr))
+    (eval ps-expr)))
 
 (defun set-view-routes (routes)
   "Setup view routes. These map strings (URIs) to components. routes is an assoc list.
