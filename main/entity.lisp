@@ -58,11 +58,24 @@ parse that into and instance of the given entity class"
   (let* ((e (make-instance entity))
          ;; Get all this entity's slots
          (slots (mapcar #'sb-mop:slot-definition-name
-                       (sb-mop:class-direct-slots (class-of e)))))
+                        (sb-mop:class-direct-slots (class-of e)))))
     ;; Loop over all the slots & insert the appropriate data where possible
     (loop for s in slots do
-         ;; Get the value of the data & set it to the instance
+       ;; Get the value of the data & set it to the instance
          (let ((val (getf data (intern (string s) :keyword))))
            (setf (slot-value e s) val)))
     ;; Return the entity
     e))
+
+(defun entity-to-json (e)
+  "Given an entity instance, return a list which can be serialised to the appropriate JSON"
+  (let* ((res ())
+         ;; Get all this entity's slots
+         (slots (mapcar #'sb-mop:slot-definition-name
+                        (sb-mop:class-direct-slots (class-of e)))))
+    ;; Loop over all the slots & extract the appropriate data
+    (loop for s in slots do
+         (setf res (append res (list
+                                (intern (string s) :keyword) (slot-value e s)))))
+    ;; Return the serialised value
+    res))
