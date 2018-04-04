@@ -1,5 +1,10 @@
 (in-package :rdf)
 
+(prove:plan 2)
+(prove:is (kebab-to-camel-case "my-name-is") "myNameIs")
+(prove:is (kebab-to-camel-case "mynameis") "mynameis")
+(prove:finalize)
+
 (prove:plan 4)
 (prove:is (is-plist (list :a 1 :b 2 :c "Hello")) T)
 (prove:is (is-plist (list 1 2 "Hello")) NIL)

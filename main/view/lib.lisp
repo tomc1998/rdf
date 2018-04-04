@@ -4,6 +4,7 @@
   "Returns a js library with convenience functions"
   (eval
    `(ps (progn
+          ,*ps-lisp-library*
           (defun app-req (uri params callback)
             "Send an app request to the given uri with the given params. params is
        an array of parameters - for example, (array \"john\" \"doe\"). These

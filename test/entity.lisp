@@ -7,7 +7,7 @@
   (prove:is (slot-value user 'last-name) "Cheng" "entity-from-json should work"))
 (prove:finalize)
 
-(prove:plan 2)
+(prove:plan 3)
 (defentity user ((first-name "VARCHAR(256)") (last-name "VARCHAR(256)")) () T)
 (let ((user (entity-to-json (make-instance 'user :first-name "Tom" :last-name "Cheng"))))
   (prove:is (getf user :first-name) "Tom" "entity-to-json should work")

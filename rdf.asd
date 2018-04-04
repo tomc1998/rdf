@@ -7,7 +7,7 @@
 
 (defpackage :rdf
   (:use  "PARENSCRIPT" "COMMON-LISP")
-  (:shadowing-import-from :corm :entity-already-exists :select-tree :insert-one)
+  (:shadowing-import-from :corm :entity-already-exists :select-tree :insert-one id)
   (:export :rdf-start
            :rdf-stop
            :define-app-req
@@ -15,12 +15,15 @@
            :set-view-routes
            :add-initial-store-state
            :*server-ref*
+           :entity-to-json
+           :entity-from-json
 
            ;; Corm re-exports
            :defentity ; Not actually a re-export - see entity.lisp
            :entity-already-exists
            :select-tree
            :insert-one
+           id
            ))
 
 (defpackage :rdf-full-example

@@ -12,10 +12,14 @@
         is-plist)
       nil))
 
-(define-condition malformed-to-json-input (error) ((text :initarg :text)))
+(defun kebab-to-camel-case (s)
+  "Given a string s, convert that string to camel case"
+  (let ((splits (str:split "-" s)))
+    (apply 'concatenate (append (list 'string (car splits))
+                                (loop for word in (cdr splits)
+                                   collect (string-capitalize word))))))
 
-(defun to-json-ps (o)
-  )
+(define-condition malformed-to-json-input (error) ((text :initarg :text)))
 
 (defun to-json (o)
   "Serialise the lisp object 'o' to JSON. Supported types:
@@ -34,7 +38,7 @@
          (format nil "{~{~a~^,~}}"
                  ;; Collect all key / value pairs, convert value to json
                  (loop for (k v) on o by #'cddr
-                      collect (format nil "\"~a\":~a" (string-downcase k) (to-json v))))
+                      collect (format nil "\"~a\":~a" (kebab-to-camel-case (string-downcase k)) (to-json v))))
          (format nil "[~{~a~^,~}]" (loop for x in o collect (to-json x)))))
     ((eq o t) "true")
     ((eq o nil) "false")

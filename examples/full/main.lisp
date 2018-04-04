@@ -1,20 +1,27 @@
 (in-package :rdf-full-example)
 
 (defun define-entities ()
-  (rdf:defentity user ((first-name "VARCHAR(256)" :not-null) (last-name "VARCHAR(256)" :not-null)) ())
+  (rdf:defentity user ((first-name "VARCHAR(256)" :not-null) (last-name "VARCHAR(256)" :not-null)) () T)
   )
 
 (defun register-components ()
   (rdf:register-component
    :nav '(:methods
-          (
-           (say-hello (vnode)
-            (app-req "/hello" (array (create first-name "Tom" last-name "Cheng"))
-                     (lambda (res) (alert res))))))
+          ((reg ()
+            (app-req "/reg" (array (create first-name (concatenate 'string "Tom" {$store.home.count})
+                                     last-name (concatenate 'string "Cheng" {$store.about.count})))
+                     (lambda (res))))
+           (list-users ()
+            (app-req "/get-users" (array)
+                     (lambda (res)
+                       (let ((values (array)))
+                         (for-in (k res) (chain values (push (@ (getprop res k) first-name))))
+                         (alert values)))))))
    '(div
      ((a href "/#!") "Home")
      ((a href "/#!/about") "About")
-     ((button onclick {@say-hello}) "Say hello")
+     ((button onclick {@reg}) "Register")
+     ((button onclick {@list-users}) "List users")
      ))
 
   (rdf:add-initial-store-state 'home '(create count 0))
@@ -44,9 +51,12 @@
                          ("/about" about))))
 
 (defun setup-app-req ()
-  (rdf:define-app-req "/hello" (user)
-    (lambda (user) (print (format nil "Hello, ~a" (slot-value user 'first-name)))))
-  )
+  (rdf:define-app-req "/reg" (user) (lambda (user) (rdf:insert-one user)))
+  (rdf:define-app-req "/get-users" ()
+    (lambda ()
+      (loop for u in (rdf:select-tree '(user ())) append
+           (list (intern (write-to-string (slot-value (car u) 'rdf:id)) :keyword)
+                 (rdf:entity-to-json (car u)))))))
 
 (defun main ()
   (define-entities)

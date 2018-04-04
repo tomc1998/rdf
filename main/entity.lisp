@@ -75,7 +75,6 @@ parse that into and instance of the given entity class"
                         (sb-mop:class-direct-slots (class-of e)))))
     ;; Loop over all the slots & extract the appropriate data
     (loop for s in slots do
-         (setf res (append res (list
-                                (intern (string s) :keyword) (slot-value e s)))))
+         (setf res (append res (list (intern (string s) :keyword) (slot-value e s)))))
     ;; Return the serialised value
     res))
