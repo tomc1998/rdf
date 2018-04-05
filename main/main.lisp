@@ -13,7 +13,8 @@
       <head>
       </head>
       <body>
-        <div id=\"content\"></div>
+        <div id=\"rdf-content\"></div>
+        <div id=\"rdf-error-flash\"></div>
         <script src=\"//unpkg.com/mithril/mithril.js\"></script>
         <script src=\"/rdf/lib.js\"></script>
         <script src=\"/rdf/app.js\"></script>

@@ -1,18 +1,18 @@
 (in-package :rdf-full-example)
 
 (defun define-entities ()
-  (rdf:defentity user ((first-name "VARCHAR(256)" :not-null) (last-name "VARCHAR(256)" :not-null)) () T)
+  (rdf:defentity user ((first-name "VARCHAR(256)" :not-null) (last-name "VARCHAR(256)" :not-null)) () t)
   )
 
 (defun register-components ()
   (rdf:register-component
    :nav '(:methods
           ((reg ()
-            (app-req "/reg" (array "Tom" "pwd")
-                     (lambda (res code) (alert code))))
+            (app-req "/reg" (array "Tom" "pwd") (lambda (res code) (alert code))))
            (list-users ()
             (app-req "/get-users" (array)
                      (lambda (res code)
+                       (chain console (log res))
                        (let ((values (array)))
                          (for-in (k res) (chain values (push (@ (getprop res k) first-name))))
                          (alert values)))))))
@@ -53,7 +53,7 @@
   (rdf:define-app-req "/reg" (nil nil)
     (lambda (user pass)
       (rdf:hash-pwd (rdf:string-to-octets pass))
-      (rdf:raise-app-error NIL 404)))
+      (rdf:raise-app-error "Hello" 404)))
   (rdf:define-app-req "/get-users" ()
     (lambda ()
       (loop for u in (rdf:select-tree '(user ())) append

@@ -329,7 +329,10 @@ cdr, otherwise returns nil."
           (t lhtml)))
     ))
 
+
+(defparameter *default-error-component* (defcomp () '(div {$store.rdf-app-error})))
 (defparameter *comp-list* ())
+(defparameter *error-component* *default-error-component*)
 (defparameter *routes* ())
 (defparameter *init-state* ())
 
@@ -365,9 +368,13 @@ mapping routes (strings) to component names (keywords)
             ;; Create store
             (setf (@ window store) (create ,@*init-state*))
             ;; Mount mithril routes
-            (let* (append (root (chain document body))
+            (let* (append (root (chain document (get-element-by-id "rdf-content")))
+                          (error-flash (chain document (get-element-by-id "rdf-error-flash")))
+                          (error-component ,*error-component*)
                           ,@(reverse (loop for (k v) on *comp-list* by #'cddr collect (list k v))))
-              (chain m (route root "/" ,(create-routes routes)))))))
+              (chain m (route root "/" ,(create-routes routes)))
+              (chain m (mount error-flash error-component))
+              ))))
     (eval ps-expr)))
 
 (defun set-view-routes (routes)
