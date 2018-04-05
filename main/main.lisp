@@ -4,6 +4,7 @@
 
 (defun setup-view-routes ()
   (hunchentoot:define-easy-handler (index :uri "/" :default-request-type :GET) ()
+    (setf (hunchentoot:session-value 'time) (get-universal-time))
     (setf (hunchentoot:content-type*) "text/html")
     "<html>
       <head>
@@ -16,6 +17,7 @@
       </body>
     </html>")
   (hunchentoot:define-easy-handler (app-js :uri "/rdf/app.js" :default-request-type :GET) ()
+    (hunchentoot:log-message* :info "~a" (hunchentoot:session-value 'time))
     (setf (hunchentoot:content-type*) "application/javascript")
     (render-app-js))
   (hunchentoot:define-easy-handler (lib-js :uri "/rdf/lib.js" :default-request-type :GET) ()
@@ -97,5 +99,4 @@
                    for p in ',params collect
                      (let ((val (getf data (intern (write-to-string i) :keyword))))
                        (if p (entity-from-json p val) val)))))
-           (hunchentoot:log-message* :INFO "~a")
            (to-json (apply callback params-parsed)))))))

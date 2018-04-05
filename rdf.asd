@@ -7,7 +7,8 @@
 
 (defpackage :rdf
   (:use  "PARENSCRIPT" "COMMON-LISP")
-  (:shadowing-import-from :corm :entity-already-exists :select-tree :insert-one id)
+  (:shadowing-import-from :corm :entity-already-exists :select-tree :insert-one :id)
+  (:shadowing-import-from :hunchentoot :session-value :log-message*)
   (:export :rdf-start
            :rdf-stop
            :define-app-req
@@ -23,7 +24,11 @@
            :entity-already-exists
            :select-tree
            :insert-one
-           id
+           :id
+
+           ;; Hunchentoot session re-exports
+           :session-value
+           :log-message*
            ))
 
 (defpackage :rdf-full-example

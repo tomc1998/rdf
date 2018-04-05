@@ -51,7 +51,9 @@
                          ("/about" about))))
 
 (defun setup-app-req ()
-  (rdf:define-app-req "/reg" (user) (lambda (user) (rdf:insert-one user)))
+  (rdf:define-app-req "/reg" (user)
+    (lambda (user)
+      (rdf:insert-one user)))
   (rdf:define-app-req "/get-users" ()
     (lambda ()
       (loop for u in (rdf:select-tree '(user ())) append
