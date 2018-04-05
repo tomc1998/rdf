@@ -8,9 +8,8 @@
   (rdf:register-component
    :nav '(:methods
           ((reg ()
-            (app-req "/reg" (array (create first-name (concatenate 'string "Tom" {$store.home.count})
-                                     last-name (concatenate 'string "Cheng" {$store.about.count})))
-                     (lambda (res))))
+            (app-req "/reg" (array "Tom" "pwd")
+                     (lambda (res) (alert res))))
            (list-users ()
             (app-req "/get-users" (array)
                      (lambda (res)
@@ -51,9 +50,9 @@
                          ("/about" about))))
 
 (defun setup-app-req ()
-  (rdf:define-app-req "/reg" (user)
-    (lambda (user)
-      (rdf:insert-one user)))
+  (rdf:define-app-req "/reg" (nil nil)
+    (lambda (user pass)
+      (rdf:hash-pwd (rdf:string-to-octets pass))))
   (rdf:define-app-req "/get-users" ()
     (lambda ()
       (loop for u in (rdf:select-tree '(user ())) append

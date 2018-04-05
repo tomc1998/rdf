@@ -3,6 +3,8 @@
 (ql:quickload :hunchentoot)
 (ql:quickload :cl-json)
 (ql:quickload :parenscript)
+(ql:quickload :ironclad)
+(ql:quickload :flexi-streams)
 (ql:quickload :corm)
 
 (defpackage :rdf
@@ -29,6 +31,11 @@
            ;; Hunchentoot session re-exports
            :session-value
            :log-message*
+
+           ;; Re-export ironclad hash password & flexi stream functions
+           :hash-pwd
+           :check-pwd
+           :string-to-octets
            ))
 
 (defpackage :rdf-full-example
@@ -37,7 +44,7 @@
 
 (asdf:defsystem rdf
   :description "A rapid development web framework"
-  :depends-on (:corm :hunchentoot :cl-json :parenscript :str)
+  :depends-on (:corm :hunchentoot :cl-json :parenscript :str :ironclad :flexi-streams)
   :components ((:file "main/json-ser")
                (:file "main/json-deser")
                (:file "main/entity")

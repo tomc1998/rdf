@@ -2,9 +2,12 @@
 
 (defvar *server-ref* nil)
 
+(setf (fdefinition 'hash-pwd) #'ironclad:pbkdf2-hash-password-to-combined-string)
+(setf (fdefinition 'check-pwd) #'ironclad:pbkdf2-check-password)
+(setf (fdefinition 'string-to-octets) #'flexi-streams:string-to-octets)
+
 (defun setup-view-routes ()
   (hunchentoot:define-easy-handler (index :uri "/" :default-request-type :GET) ()
-    (setf (hunchentoot:session-value 'time) (get-universal-time))
     (setf (hunchentoot:content-type*) "text/html")
     "<html>
       <head>
