@@ -47,10 +47,6 @@
 
 (defun handle-app-req-error (condition)
   "Called from the define-app-req handler-case"
-  ;; Log the error
-  (hunchentoot:log-message*
-   :ERROR "An error has occurred: ~s."
-   (write (slot-value condition 'message) :escape nil))
   ;; Set return codes & error response
   (setf (hunchentoot:return-code*) (slot-value condition 'code))
   (list :error (slot-value condition 'message)))
@@ -129,4 +125,8 @@ handling."
            (to-json (handler-case
                         (apply callback params-parsed)
                       (app-req-error (condition) (handle-app-req-error condition))
-                      (error () (handle-app-req-error (make-instance 'app-req-error))))))))))
+                      (error (condition)
+                        (hunchentoot:log-message*
+                         :ERROR "~s"
+                         (write (slot-value condition 'message) :escape nil))
+                        (handle-app-req-error (make-instance 'app-req-error))))))))))

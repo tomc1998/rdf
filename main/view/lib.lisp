@@ -22,20 +22,27 @@
 
        See also: rdf:define-app-req function."
             (let ((params-obj (create)))
-              (loop for i from 0 for p in params do (setf (@ params-obj (progn i)) p))
-              (chain
-               m (request
-                  (create
-                   method "POST"
-                   url uri
-                   extract (lambda (res) res)
-                   data params-obj)
-                  ) (then (lambda (res)
-                            (setf (@ res response-text) (chain *json* (parse (@ res response-text))))
-                            (callback (@ res response-text) (@ res status))))
-                    (catch (lambda (res)
-                             (setf (@ res response-text) (chain *json* (parse (@ res response-text))))
-                             (if error-callback
-                                 (error-callback (@ res response-text) (@ res status))
-                                 (setf (@ window store rdf-app-error) (@ res response-text error)))
-                             )))))))))
+              (if (instanceof params *Array) 
+                  (loop for i from 0 for p in params do (setf (@ params-obj (progn i)) p))
+                  (setf (@ params-obj 0) params))
+              (let ((req (chain
+                          m (request
+                             (create
+                              method "POST"
+                              url uri
+                              extract (lambda (res) res)
+                              data params-obj)
+                             ))))
+                (chain
+                 req
+                 (then
+                  (lambda (res)
+                    (callback (chain *json* (parse (@ res response-text))) (@ res status)))))
+                (chain
+                 req
+                 (catch
+                     (lambda (res)
+                       (if error-callback
+                           (error-callback (chain *json* (parse (@ res response-text))) (@ res status))
+                           (setf (@ window store rdf-app-error) (chain *json* (parse (@ res response-text )) error)))
+                       ))))))))))

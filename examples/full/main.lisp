@@ -1,8 +1,7 @@
 (in-package :rdf-full-example)
 
 (defun define-entities ()
-  (rdf:defentity user ((first-name "VARCHAR(256)" :not-null) (last-name "VARCHAR(256)" :not-null)) () t)
-  )
+(rdf:defentity user-auth ((user "VARCHAR(256)" :not-null) (pass "VARCHAR(256)" :not-null)) () t))
 
 (defun register-style ()
   (let ((primary "#F00"))
@@ -15,14 +14,15 @@
   (rdf:register-component
    :nav '(:methods
           ((reg ()
-            (app-req "/reg" (array "Tom" "pwd") (lambda (res code) (alert code))))
+            (app-req "/reg" (array (create user "Tom" pass "pwd")) (lambda (res code) (alert code))))
            (list-users ()
             (app-req "/get-users" (array)
                      (lambda (res code)
                        (chain console (log res))
-                       (let ((values (array)))
-                         (for-in (k res) (chain values (push (@ (getprop res k) first-name))))
-                         (alert values)))))))
+                       (let ((users (loop for u in (@ res users)
+                                       collect (@ u user))))
+                         (alert users))
+                       )))))
    '(div
      ((a href "/#!") "Home")
      ((a href "/#!/about") "About")
@@ -57,15 +57,15 @@
                          ("/about" about))))
 
 (defun setup-app-req ()
-  (rdf:define-app-req "/reg" (nil nil)
-    (lambda (user pass)
-      (rdf:hash-pwd (rdf:string-to-octets pass))
-      (rdf:raise-app-error "Hello" 404)))
+  (rdf:define-app-req "/reg" (user-auth)
+    (lambda (user)
+      ;; Hash pwd & insert, returning the user's ID
+      (setf (slot-value user 'pass)
+            (rdf:hash-pwd (rdf:string-to-octets (slot-value user 'pass))))
+      (rdf:insert-one user)))
   (rdf:define-app-req "/get-users" ()
-    (lambda ()
-      (loop for u in (rdf:select-tree '(user ())) append
-           (list (intern (write-to-string (slot-value (car u) 'rdf:id)) :keyword)
-                 (rdf:entity-to-json (car u)))))))
+    (lambda () (list :users (loop for u in (rdf:select-tree '(user-auth ()))
+                               collect (rdf:entity-to-json (car u)))))))
 
 (defun main ()
   (define-entities)
