@@ -13,11 +13,17 @@
   (:shadowing-import-from :hunchentoot :session-value :log-message*)
   (:export :rdf-start
            :rdf-stop
+           :*server-ref*
+
+           ;; Request stuff
            :define-app-req
+           :app-req-error
+           :raise-app-error
+
+           ;; View (i.e. client) stuff
            :register-component
            :set-view-routes
            :add-initial-store-state
-           :*server-ref*
            :entity-to-json
            :entity-from-json
 

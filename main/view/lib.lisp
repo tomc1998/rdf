@@ -12,7 +12,9 @@
        Keywords can also be used for keys, but aren't necessary.
 
        The callback is a function which is executed when the XHR
-       returns. This function should take a 'res' parameter, which contains the returned data.
+       returns. This function should take 2 parameters - a 'body' parameter,
+       which contains the returned data, and a 'status' parameter which contains
+       the HTTP status code.
 
        See also: rdf:define-app-req function."
             (let ((params-obj (create)))
@@ -22,5 +24,7 @@
                   (create
                    method "POST"
                    url uri
+                   extract (lambda (res) res)
                    data params-obj)
-                  ) (then callback))))))))
+                  ) (then (lambda (res)
+                            (callback (@ res response-text) (@ res status)))))))))))

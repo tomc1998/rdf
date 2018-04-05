@@ -9,10 +9,10 @@
    :nav '(:methods
           ((reg ()
             (app-req "/reg" (array "Tom" "pwd")
-                     (lambda (res) (alert res))))
+                     (lambda (res code) (alert code))))
            (list-users ()
             (app-req "/get-users" (array)
-                     (lambda (res)
+                     (lambda (res code)
                        (let ((values (array)))
                          (for-in (k res) (chain values (push (@ (getprop res k) first-name))))
                          (alert values)))))))
@@ -52,7 +52,8 @@
 (defun setup-app-req ()
   (rdf:define-app-req "/reg" (nil nil)
     (lambda (user pass)
-      (rdf:hash-pwd (rdf:string-to-octets pass))))
+      (rdf:hash-pwd (rdf:string-to-octets pass))
+      (rdf:raise-app-error NIL 404)))
   (rdf:define-app-req "/get-users" ()
     (lambda ()
       (loop for u in (rdf:select-tree '(user ())) append

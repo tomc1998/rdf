@@ -37,6 +37,26 @@
 (defun rdf-stop () (if (and *server-ref* (hunchentoot:started-p *server-ref*))
                        (hunchentoot:stop *server-ref*) nil))
 
+(define-condition app-req-error (error) ((message :initarg :message
+                                                  :initform "An error has occurred.")
+                                         (code :initarg :code :initform 500)))
+
+(defun handle-app-req-error (condition)
+  "Called from the define-app-req handler-case"
+  ;; Log the error
+  (hunchentoot:log-message*
+   :ERROR "An error has occurred: ~s."
+   (write (slot-value condition 'message) :escape nil))
+  ;; Set return codes & error response
+  (setf (hunchentoot:return-code*) (slot-value condition 'code))
+  (list :error (slot-value condition 'message)))
+
+(defun raise-app-error (&optional (message "An error has occurred.") (code 500))
+  " A convenience function to raise an error. Pass in a string message to pass
+back to the client, and an error code type if you're doing some custom
+handling."
+  (error 'app-req-error :message message :code code))
+
 (defmacro define-app-req (uri params callback)
   "Listen for an app request. An 'app request' is a POST request with json
   parameters. These are formatted automatically for transformation from
@@ -102,4 +122,7 @@
                    for p in ',params collect
                      (let ((val (getf data (intern (write-to-string i) :keyword))))
                        (if p (entity-from-json p val) val)))))
-           (to-json (apply callback params-parsed)))))))
+           (to-json (handler-case
+                        (apply callback params-parsed)
+                      (app-req-error (condition) (handle-app-req-error condition))
+                      (error () (handle-app-req-error (make-instance 'app-req-error))))))))))
