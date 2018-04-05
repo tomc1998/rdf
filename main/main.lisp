@@ -11,6 +11,7 @@
     (setf (hunchentoot:content-type*) "text/html")
     "<html>
       <head>
+        <link rel=\"stylesheet\" href=\"/rdf/style.css\" type=\"text/css\">
       </head>
       <body>
         <div id=\"rdf-content\"></div>
@@ -20,8 +21,10 @@
         <script src=\"/rdf/app.js\"></script>
       </body>
     </html>")
+  (hunchentoot:define-easy-handler (app-css :uri "/rdf/style.css" :default-request-type :GET) ()
+    (setf (hunchentoot:content-type*) "text/css")
+    (render-app-css))
   (hunchentoot:define-easy-handler (app-js :uri "/rdf/app.js" :default-request-type :GET) ()
-    (hunchentoot:log-message* :info "~a" (hunchentoot:session-value 'time))
     (setf (hunchentoot:content-type*) "application/javascript")
     (render-app-js))
   (hunchentoot:define-easy-handler (lib-js :uri "/rdf/lib.js" :default-request-type :GET) ()

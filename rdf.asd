@@ -5,6 +5,7 @@
 (ql:quickload :parenscript)
 (ql:quickload :ironclad)
 (ql:quickload :flexi-streams)
+(ql:quickload :lass)
 (ql:quickload :corm)
 
 (defpackage :rdf
@@ -26,6 +27,9 @@
            :add-initial-store-state
            :entity-to-json
            :entity-from-json
+           ;; View styling
+           :register-lass 
+           :clear-lass
 
            ;; Corm re-exports
            :defentity ; Not actually a re-export - see entity.lisp
@@ -50,7 +54,7 @@
 
 (asdf:defsystem rdf
   :description "A rapid development web framework"
-  :depends-on (:corm :hunchentoot :cl-json :parenscript :str :ironclad :flexi-streams)
+  :depends-on (:corm :hunchentoot :cl-json :parenscript :str :ironclad :flexi-streams :lass)
   :components ((:file "main/json-ser")
                (:file "main/json-deser")
                (:file "main/entity")
@@ -58,7 +62,7 @@
                (:file "main/view/lib")
                (:file "main/main"
                       :depends-on ("main/json-ser" "main/json-deser"
-                      "main/view/view" "main/view/lib" "main/entity")
+                                                   "main/view/view" "main/view/lib" "main/entity")
                       )))
 
 (asdf:defsystem rdf-tests

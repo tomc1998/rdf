@@ -4,6 +4,13 @@
   (rdf:defentity user ((first-name "VARCHAR(256)" :not-null) (last-name "VARCHAR(256)" :not-null)) () t)
   )
 
+(defun register-style ()
+  (let ((primary "#F00"))
+    (rdf:register-lass
+     'app-style
+     `(div :background-color ,primary)))
+  )
+
 (defun register-components ()
   (rdf:register-component
    :nav '(:methods
@@ -63,6 +70,7 @@
 (defun main ()
   (define-entities)
   (register-components)
+  (register-style)
   (setup-routes)
   (setup-app-req)
   (rdf:rdf-stop)

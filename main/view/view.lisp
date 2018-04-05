@@ -335,6 +335,7 @@ cdr, otherwise returns nil."
 (defparameter *error-component* *default-error-component*)
 (defparameter *routes* ())
 (defparameter *init-state* ())
+(defparameter *lass-styles* ())
 
 (defun add-initial-store-state (key value)
   "Add a key to the initial store state, and store the given PS value in it.
@@ -342,6 +343,15 @@ cdr, otherwise returns nil."
   # Example
   (add-initial-store-state 'count 0)"
   (setf (getf *init-state* key) value))
+
+
+(defun register-lass (name lass)
+  "Register the given LASS (lisp css) rules to the given name. If the name has
+already been used, this removes the lass bound to that name. Use clear-lass to
+remove a binding. This is to allow easy loading & overriding of various themes."
+  (setf (getf *lass-styles* name) lass))
+
+(defun clear-lass (name) (setf (getf *lass-styles* name) nil))
 
 (defun register-component (name fields template)
   "Register a component. name should be a keywords, see defcomp for fields / template docs"
@@ -385,6 +395,10 @@ mapping routes (strings) to component names (keywords)
     This sets '/' to route to a component called 'home', and '/about' to route
     to a component call 'about'."
   (setf *routes* routes))
+
+(defun render-app-css ()
+  "Render the app's stylesheet"
+  (lass:compile-and-write (loop for (k v) on *lass-styles* by #'cddr append v)))
 
 (defun render-app-js ()
   "Given the current state (*routes* and *comp-list*), render an appropriate
