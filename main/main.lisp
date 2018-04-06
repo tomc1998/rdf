@@ -1,7 +1,10 @@
 (in-package :rdf)
 
 (defvar *server-ref* nil)
+(defvar *verify-auth* (lambda (type) (declare (ignore type))
+                              (error 'error "No *verify-auth* function defined")))
 
+;; Redefine functions so we can re-export with nicer names
 (setf (fdefinition 'hash-pwd) #'ironclad:pbkdf2-hash-password-to-combined-string)
 (setf (fdefinition 'check-pwd) #'ironclad:pbkdf2-check-password)
 (setf (fdefinition 'string-to-octets) #'flexi-streams:string-to-octets)
@@ -48,6 +51,9 @@
 (defun handle-app-req-error (condition)
   "Called from the define-app-req handler-case"
   ;; Set return codes & error response
+  (hunchentoot:log-message* :ERROR "~A: ~A | CODE: ~A" (write condition :escape nil)
+                            (slot-value condition 'message)
+                            (slot-value condition 'code))
   (setf (hunchentoot:return-code*) (slot-value condition 'code))
   (list :error (slot-value condition 'message)))
 
@@ -57,7 +63,7 @@ back to the client, and an error code type if you're doing some custom
 handling."
   (error 'app-req-error :message message :code code))
 
-(defmacro define-app-req (uri params callback)
+(defmacro define-app-req (uri params callback &key require-auth)
   "Listen for an app request. An 'app request' is a POST request with json
   parameters. These are formatted automatically for transformation from
   JSON to lisp object.
@@ -70,6 +76,14 @@ handling."
 
   The third form is the callback called when a request comes through. It must
   accept the same amount of arguments as specified in the params form.
+
+  The 'require-auth' key parameter is by default nil - if set to non-null, this
+  endpoint will need to be verified using the *verify-auth* function. The value of
+  the require-auth key parameter will be passed to the *verify-auth* function.
+  If this *verify-auth* function returns T, the request proceeds as normal - if
+  it returns false, the request is rejected and a 401 error is returned. See
+  `set-client-default-unauthorized-behaviour` for customising how the client
+  reacts.
 
   ## Params form
 
@@ -113,20 +127,20 @@ handling."
   `(let ((callback ,callback))
      (hunchentoot:define-easy-handler (,(intern uri) :uri ,uri :default-request-type :POST) ()
        (setf (hunchentoot:content-type*) "application/json")
-       (let ((data (from-json (string (hunchentoot:raw-post-data :force-text t)))))
-         (if (not (typep data 'list)) (error 'error "Error - app req param is not an object"))
-         (if (not (is-plist data)) (error 'error "Error - app req param is not an object"))
-         ;; Get the params from the data
-         (let ((params-parsed
-                (loop for i from 0 to ,(1-(length params))
-                   for p in ',params collect
-                     (let ((val (getf data (intern (write-to-string i) :keyword))))
-                       (if p (entity-from-json p val) val)))))
-           (to-json (handler-case
-                        (apply callback params-parsed)
-                      (app-req-error (condition) (handle-app-req-error condition))
-                      (error (condition)
-                        (hunchentoot:log-message*
-                         :ERROR "~s"
-                         (write (slot-value condition 'message) :escape nil))
-                        (handle-app-req-error (make-instance 'app-req-error))))))))))
+       ;; If this is an authenticated endpoint, check auth
+       (to-json
+        (handler-case
+            (progn
+              ,(if require-auth `(if (not (funcall *verify-auth* ,require-auth))
+                                     (error 'app-req-error :message "Unauthorized." :code 401)))
+              (let ((data (from-json (string (hunchentoot:raw-post-data :force-text t)))))
+                (if (not (typep data 'list)) (error 'error "Error - app req param is not an object"))
+                (if (not (is-plist data)) (error 'error "Error - app req param is not an object"))
+                ;; Get the params from the data
+                (let ((params-parsed
+                       (loop for i from 0 to ,(1-(length params))
+                          for p in ',params collect
+                            (let ((val (getf data (intern (write-to-string i) :keyword))))
+                              (if p (entity-from-json p val) val)))))
+                  (apply callback params-parsed))))
+          (app-req-error (condition) (handle-app-req-error condition)))))))

@@ -15,6 +15,7 @@
   (:export :rdf-start
            :rdf-stop
            :*server-ref*
+           :*verify-auth*
 
            ;; Request stuff
            :define-app-req

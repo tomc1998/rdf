@@ -4,7 +4,6 @@
 (rdf:defentity user-auth ((user "VARCHAR(256)" :not-null) (pass "VARCHAR(256)" :not-null)) () t))
 
 (defun register-style ()
-  
   )
 
 (defun register-components ()
@@ -30,7 +29,7 @@
    :login-form
    '(:state (user (create user "" pass ""))
      :methods ((login (e) (progn (chain e (prevent-default))
-                               (app-req "/login" {user} (lambda (res code)))))
+                               (app-req "/login" {user} (lambda (res code) (chain console (log res))))))
                (set-user (val) (setf {user.user} val))
                (set-pass (val) (setf {user.pass} val))))
    '((form onsubmit {@login})
@@ -46,18 +45,22 @@
 
   (rdf:register-component
    :home
-   '(:methods ((reg () )))
+   '(:methods ((access-data () (app-req "/access-data" (array) (lambda (res code) (alert res))))))
    '(div
      (h1 "Register")
      :reg-form
      (h1 "Login")
      :login-form
+     ((button onclick {@access-data}) "Access sensitive data")
      )))
 
 (defun setup-routes ()
   (rdf:set-view-routes '(("/" home))))
 
 (defun setup-app-req ()
+  ;; Set verify auth function to check for user-id
+  (setf rdf:*verify-auth* (lambda (type)
+                            (cond ((eq type 'normal) (rdf:session-value 'user-id)))))
   (rdf:define-app-req "/reg" (user-auth)
     (lambda (user)
       ;; Hash pwd & insert, returning the user's ID
@@ -65,11 +68,22 @@
             (rdf:hash-pwd (rdf:string-to-octets (slot-value user 'pass))))
       (rdf:insert-one user)))
   (rdf:define-app-req "/login" (user-auth)
-    (lambda (user)))
-
-  (rdf:define-app-req "/get-users" ()
-    (lambda () (list :users (loop for u in (rdf:select-tree '(user-auth ()))
-                               collect (rdf:entity-to-json (car u)))))))
+    (lambda (user)
+      ;; Select user with the right name
+      (let* ((tree (rdf:Select-tree '(user-auth ())
+                                    :where `(= (user-auth user) ,(slot-value user 'user))))
+             (first (car tree)))
+        ;; Make sure user exists - if not, just return nil
+        (if (not first) nil
+            (let ((db-user (car first)))
+              ;; Check pwd hash, return true & set session if it worked
+              (if (rdf:check-pwd (rdf:string-to-octets (slot-value user 'pass))
+                                 (slot-value db-user 'pass))
+                  (progn (setf (rdf:session-value 'user-id) (slot-value db-user 'rdf:id))
+                         T)
+                  NIL))))))
+  (rdf:define-app-req "/access-data" ()
+    (lambda () "This is some sensitive data") :require-auth 'normal))
 
 (defun main ()
   (define-entities)
