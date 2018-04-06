@@ -83,7 +83,8 @@ handling."
   If this *verify-auth* function returns T, the request proceeds as normal - if
   it returns false, the request is rejected and a 401 error is returned. See
   `set-client-default-unauthorized-behaviour` for customising how the client
-  reacts.
+  reacts. Different values can be used for different levels of authentication -
+  for example, :require-auth 'normal and :require-auth 'admin.
 
   ## Params form
 

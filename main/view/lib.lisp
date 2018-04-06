@@ -1,5 +1,14 @@
 (in-package :rdf)
 
+(defvar client-default-unauthorised-behaviour '(alert "Unauthorised"))
+
+(defun set-client-default-unauthorized-behaviour (expr)
+  "Customise the parenscript code run when a request gets rejected due to
+authorization issues. By default, this simply alerts 'unauthorised'. A good
+value for this might be to call 'm.route.set', the mithril function to navigate
+to another page, and navigate to a login page."
+  (setf client-default-unauthorised-behaviour expr))
+
 (defun render-lib-js ()
   "Returns a js library with convenience functions"
   (eval
@@ -44,5 +53,9 @@
                      (lambda (res)
                        (if error-callback
                            (error-callback (chain *json* (parse (@ res response-text))) (@ res status))
-                           (setf (@ window store rdf-app-error) (chain *json* (parse (@ res response-text )) error)))
+                           (progn
+                             (if (= (@ res status) 401)
+                                 ,client-default-unauthorised-behaviour
+                                 (setf (@ window store rdf-app-error)
+                                       (chain *json* (parse (@ res response-text )) error)))))
                        ))))))))))

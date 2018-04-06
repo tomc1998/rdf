@@ -28,6 +28,7 @@
            :add-initial-store-state
            :entity-to-json
            :entity-from-json
+           :set-client-default-unauthorized-behaviour
            ;; View styling
            :register-lass 
            :clear-lass

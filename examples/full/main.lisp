@@ -7,6 +7,10 @@
   )
 
 (defun register-components ()
+  ;; Set default client response for unauth requests
+  (rdf:set-client-default-unauthorized-behaviour '(progn (alert "UNAUTH") (alert "Hello")))
+
+  ;; Create components
   (rdf:register-component
    :reg-form
    '(:state (user (create user "" pass ""))
