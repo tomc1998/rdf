@@ -206,6 +206,23 @@
   Attrs are all mutable, unlike in the mithril framework. This is achieved by
   creating extra state fields initialised to the values of the attrs.
 
+  # Extra templating controls
+  A cons can be inserted with the car being a symbol beginning with $. This will
+  be expanded when compiling the template. Here are some examples:
+
+  ($loop for u in users (div \"Hello\", {u.first-name}))
+  This will be expanded to a list of divs containing 'Hello, XXX' where XXX is
+  the name of the user. 'users' should be a field of the current component,
+  containing an array of objects, which all have the 'first-name' field.
+
+  ($model {my-value})
+  This can be placed as an attribute, and will bind the data of the element
+  (let's say, and <input>) to the model & update the model when the element
+  changes. This expands to bind the 'value' and 'onchange' attributes on the
+  element. As such, this shouldn't be used if value or onchange is already used.
+  Here is a full template example:
+  ((input ($model {my-value}) placeholder \"Input a value here\"))
+
   # Template syntax
     Basically just LHTML (see
     https://franz.com/support/documentation/6.0/doc/phtml.htm#lhtml) with some
