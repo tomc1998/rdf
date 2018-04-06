@@ -15,36 +15,25 @@
    :reg-form
    '(:state (user (create user "" pass ""))
      :methods ((reg (e) (progn (chain e (prevent-default))
-                               (app-req "/reg" {user} (lambda (res code)))))
-               (set-user (val) (setf {user.user} val))
-               (set-pass (val) (setf {user.pass} val))))
+                               (app-req "/reg" {user} (lambda (res code)))))))
    '((form onsubmit {@reg})
      (label "Username")
-     ((input type "text"
-       onchange ($ (chain m (with-attr "value" {@set-user})))
-       value {user.user})) (br)
+     ((input type "text" ($model {user.user}))) (br)
      (label "Password")
-     ((input type "password"
-       onchange ($ (chain m (with-attr "value" {@set-pass})))
-       value {user.pass})) (br)
+     ((input type "password" ($model {user.pass}))) (br)
      ((input type "submit"))))
 
   (rdf:register-component
    :login-form
    '(:state (user (create user "" pass ""))
      :methods ((login (e) (progn (chain e (prevent-default))
-                               (app-req "/login" {user} (lambda (res code) (chain console (log res))))))
-               (set-user (val) (setf {user.user} val))
-               (set-pass (val) (setf {user.pass} val))))
+                                 (app-req "/login" {user} (lambda (res code)
+                                                            (chain console (log res))))))))
    '((form onsubmit {@login})
      (label "Username")
-     ((input type "text"
-       onchange ($ (chain m (with-attr "value" {@set-user})))
-       value {user.user})) (br)
+     ((input type "text" ($model {user.user}))) (br)
      (label "Password")
-     ((input type "password"
-       onchange ($ (chain m (with-attr "value" {@set-pass})))
-       value {user.pass})) (br)
+     ((input type "password" ($model {user.pass}))) (br)
      ((input type "submit"))))
 
   (rdf:register-component

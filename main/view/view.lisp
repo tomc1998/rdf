@@ -17,11 +17,17 @@
         ;; Get the 'rest' of the list
          (body (cdr (cddddr c)))
          (symbol-table `(,(intern (format nil "{~a}" binding) :keyword) ($ item))))
-    `($ ,(loop for b in body append
-              (let ((expanded (expand-with-symbol-table b symbol-table)))
-                `(loop for item in ,target collect
-                      ,(render expanded))
-                )))))
+    `(($ ,(loop for b in body append
+               (let ((expanded (expand-with-symbol-table b symbol-table)))
+                 `(loop for item in ,target collect
+                       ,(render expanded))
+                 ))))))
+
+(defun expand-model-control (c)
+  (let ((binding (second c)))
+    `(onchange
+      ($ (chain m (with-attr "value" (lambda (v) (setf ,binding v)))))
+      value ,binding)))
 
 (defun try-expand-control-cons (c)
   "A control cons is a cons who's car begins with a special template symbol, one
@@ -40,17 +46,18 @@
   (if (not (char= #\$ (char (string (car c)) 0))) (return-from try-expand-control-cons nil))
   (cond
     ((string= (string-downcase (car c)) "$loop") (expand-loop-control c))
+    ((string= (string-downcase (car c)) "$model") (expand-model-control c))
     (t nil)))
 
 (defun expand-all-control-structures (template)
   "Returns the template with all control structures (i.e. $loop) expanded."
   (cond
     ((listp template)
-     (loop for i from 0 for item in template collect
-            (let ((expanded (try-expand-control-cons item)))
-              (if expanded expanded
-                  ;; If we failed to expand, just treat this as a normal list
-                  (expand-all-control-structures item)))))
+     (loop for i from 0 for item in template append
+          (let ((expanded (try-expand-control-cons item)))
+            (if expanded expanded
+                ;; If we failed to expand, just treat this as a normal list
+                (list (expand-all-control-structures item))))))
     (t template)))
 
 (defun get-root-interpolation-symbol (symbol)
@@ -96,7 +103,7 @@
 (defun expand-with-symbol-table (template symbol-table)
   (cond
     ((typep template 'cons) (loop for child in template collect
-                                   (expand-with-symbol-table child symbol-table)))
+                                 (expand-with-symbol-table child symbol-table)))
     ;; Check if this is an event listener symbol (i.e. starting with {@ instead of just {)
     ;; Check if we can expand this symbol
     ((and (typep template 'symbol)
