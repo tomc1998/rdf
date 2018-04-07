@@ -56,6 +56,10 @@
   (:use "PARENSCRIPT" "COMMON-LISP")
   (:export :main))
 
+(defpackage :rdf-bs-example
+  (:use "PARENSCRIPT" "COMMON-LISP")
+  (:export :main))
+
 (asdf:defsystem rdf
   :description "A rapid development web framework"
   :depends-on (:corm :hunchentoot :cl-json :parenscript :str :ironclad :flexi-streams :lass)
@@ -81,3 +85,8 @@
   :author "Tom <thomascheng1998@gmail.com>"
   :depends-on (:rdf)
   :components ((:file "examples/full/main")))
+
+(asdf:defsystem rdf-bs-example
+  :author "Tom <thomascheng1998@gmail.com>"
+  :depends-on (:rdf :bootstrap)
+  :components ((:file "examples/bs/main")))

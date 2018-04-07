@@ -3,11 +3,7 @@
 (defun define-entities ()
 (rdf:defentity user-auth ((user "VARCHAR(256)" :not-null) (pass "VARCHAR(256)" :not-null)) () t))
 
-(defun register-style ()
-  ;; Add bootstrap
-  (rdf:add-additional-stylesheet-url
-   "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
-  )
+(defun register-style ())
 
 (defun register-components ()
   ;; Set default client response for unauth requests
