@@ -3,6 +3,13 @@
 (defvar *server-ref* nil)
 (defvar *verify-auth* (lambda (type) (declare (ignore type))
                               (error 'error "No *verify-auth* function defined")))
+(defvar *additional-stylesheet-urls* ())
+
+(defun add-additional-stylesheet-url (url)
+  (push url *additional-stylesheet-urls*))
+
+(defun clear-additional-stylesheets ()
+  (setf *additional-stylesheet-urls* ()))
 
 ;; Redefine functions so we can re-export with nicer names
 (setf (fdefinition 'hash-pwd) #'ironclad:pbkdf2-hash-password-to-combined-string)
@@ -12,9 +19,12 @@
 (defun setup-view-routes ()
   (hunchentoot:define-easy-handler (index :uri "/" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "text/html")
-    "<html>
+    (format nil "<html>
       <head>
         <link rel=\"stylesheet\" href=\"/rdf/style.css\" type=\"text/css\">
+        ~{
+          <link rel=\"stylesheet\" href=\"~a\" type=\"text/css\">
+        ~}
       </head>
       <body>
         <div id=\"rdf-content\"></div>
@@ -23,7 +33,7 @@
         <script src=\"/rdf/lib.js\"></script>
         <script src=\"/rdf/app.js\"></script>
       </body>
-    </html>")
+    </html>" *additional-stylesheet-urls*))
   (hunchentoot:define-easy-handler (app-css :uri "/rdf/style.css" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "text/css")
     (render-app-css))

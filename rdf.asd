@@ -16,6 +16,8 @@
            :rdf-stop
            :*server-ref*
            :*verify-auth*
+           :add-additional-stylesheet-url
+           :clear-additional-stylesheets
 
            ;; Request stuff
            :define-app-req

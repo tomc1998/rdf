@@ -4,6 +4,9 @@
 (rdf:defentity user-auth ((user "VARCHAR(256)" :not-null) (pass "VARCHAR(256)" :not-null)) () t))
 
 (defun register-style ()
+  ;; Add bootstrap
+  (rdf:add-additional-stylesheet-url
+   "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
   )
 
 (defun register-components ()
@@ -63,7 +66,7 @@
   (rdf:define-app-req "/login" (user-auth)
     (lambda (user)
       ;; Select user with the right name
-      (let* ((tree (rdf:Select-tree '(user-auth ())
+      (let* ((tree (rdf:select-tree '(user-auth ())
                                     :where `(= (user-auth user) ,(slot-value user 'user))))
              (first (car tree)))
         ;; Make sure user exists - if not, just return nil
