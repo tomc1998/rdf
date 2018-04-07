@@ -4,12 +4,13 @@
 (defvar *verify-auth* (lambda (type) (declare (ignore type))
                               (error 'error "No *verify-auth* function defined")))
 (defvar *additional-stylesheet-urls* ())
+(defvar *additional-script-urls* ())
 
-(defun add-additional-stylesheet-url (url)
-  (push url *additional-stylesheet-urls*))
+(defun add-additional-stylesheet-url (url) (push url *additional-stylesheet-urls*))
+(defun clear-additional-stylesheets () (setf *additional-stylesheet-urls* ()))
+(defun add-additional-script-url (url) (push url *additional-script-urls*))
+(defun clear-additional-scripts () (setf *additional-script-urls* ()))
 
-(defun clear-additional-stylesheets ()
-  (setf *additional-stylesheet-urls* ()))
 
 ;; Redefine functions so we can re-export with nicer names
 (setf (fdefinition 'hash-pwd) #'ironclad:pbkdf2-hash-password-to-combined-string)
@@ -29,11 +30,14 @@
       <body>
         <div id=\"rdf-content\"></div>
         <div id=\"rdf-error-flash\"></div>
+        ~{
+        <script src=\"~a\"></script>
+        ~}
         <script src=\"//unpkg.com/mithril/mithril.js\"></script>
         <script src=\"/rdf/lib.js\"></script>
         <script src=\"/rdf/app.js\"></script>
       </body>
-    </html>" *additional-stylesheet-urls*))
+    </html>" *additional-stylesheet-urls* *additional-script-urls*))
   (hunchentoot:define-easy-handler (app-css :uri "/rdf/style.css" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "text/css")
     (render-app-css))

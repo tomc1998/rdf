@@ -18,6 +18,8 @@
            :*verify-auth*
            :add-additional-stylesheet-url
            :clear-additional-stylesheets
+           :add-additional-script-url
+           :clear-additional-scripts
 
            ;; Request stuff
            :define-app-req
