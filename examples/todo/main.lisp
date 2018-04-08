@@ -53,7 +53,6 @@
 (defun server ()
   (rdf:define-app-req "/reg" (user-auth)
     (lambda (user-auth)
-      (rdf:raise-app-error)
       (setf (slot-value user-auth 'pass) (rdf:hash-pwd (slot-value user-auth 'pass)))
       (rdf:log-message* :INFO "~a" (length (slot-value user-auth 'pass)))
       (rdf:insert-one user-auth)
