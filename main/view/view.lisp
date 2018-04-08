@@ -244,24 +244,24 @@
          (methods (getf fields :methods))
          (lifecycle (getf fields :lifecycle))
          ;; get lifecycle method bodies
-         (onupdate (mapcar (lambda (a) (expand-interpolations a fields))
-                              (cdr (assoc 'onupdate lifecycle :test
-                                      (lambda (s0 s1) (string= (string s0) (string s1)))))))
-         (onbeforeupdate (mapcar (lambda (a) (expand-interpolations a fields))
-                                    (cdr (assoc 'onbeforeupdate lifecycle :test
-                                            (lambda (s0 s1) (string= (string s0) (string s1)))))))
-         (onremove (mapcar (lambda (a) (expand-interpolations a fields))
-                              (cdr (assoc 'onremove lifecycle :test
-                                      (lambda (s0 s1) (string= (string s0) (string s1)))))))
-         (onbeforeremove (mapcar (lambda (a) (expand-interpolations a fields))
-                                    (cdr (assoc 'onbeforeremove lifecycle :test
-                                            (lambda (s0 s1) (string= (string s0) (string s1)))))))
-         (oncreate (mapcar (lambda (a) (expand-interpolations a fields))
-                              (cdr (assoc 'oncreate lifecycle :test
-                                      (lambda (s0 s1) (string= (string s0) (string s1)))))))
-         (oninit (mapcar (lambda (a) (expand-interpolations a fields))
-                           (cdr (assoc 'oninit lifecycle :test
-                                   (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (onupdate (mapcar (lambda (a) (expand-all-ps-injects (expand-interpolations a fields)))
+                           (cdr (assoc 'onupdate lifecycle :test
+                                       (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (onbeforeupdate (mapcar (lambda (a) (expand-all-ps-injects (expand-interpolations a fields)))
+                                 (cdr (assoc 'onbeforeupdate lifecycle :test
+                                             (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (onremove (mapcar (lambda (a) (expand-all-ps-injects (expand-interpolations a fields)))
+                           (cdr (assoc 'onremove lifecycle :test
+                                       (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (onbeforeremove (mapcar (lambda (a) (expand-all-ps-injects (expand-interpolations a fields)))
+                                 (cdr (assoc 'onbeforeremove lifecycle :test
+                                             (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (oncreate (mapcar (lambda (a) (expand-all-ps-injects (expand-interpolations a fields)))
+                           (cdr (assoc 'oncreate lifecycle :test
+                                       (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (oninit (mapcar (lambda (a) (expand-all-ps-injects (expand-interpolations a fields)))
+                         (cdr (assoc 'oninit lifecycle :test
+                                     (lambda (s0 s1) (string= (string s0) (string s1)))))))
          ;; Build state declarations of attrs for parenscript (these will go in the oninit method)
          (attr-state-decl (loop for a in attrs collect `(setf (@ vnode state ,a) (@ vnode attrs ,a))))
 
