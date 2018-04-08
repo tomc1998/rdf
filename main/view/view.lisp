@@ -242,6 +242,14 @@
   Here is a full template example:
   ((input ($model {my-value}) placeholder \"Input a value here\"))
 
+  ($if {my-condition} (div \"my-condition is true\") (span \"my-condition is false\"))
+  You can perform conditional rendering with this. If the given condition is
+  truthy, the first item (in this case a div) is inserted into the rendered
+  markup. If the condition is falsey, the second item (in this case a span) is
+  inserted into the markup. This can also be used in attributes:
+  ((div class ($if {my-condition} \"some-class\")) \"Hello)
+  If 'my-condition' is true, this will apply 'some-class' to the element.
+
   # Template syntax
     Basically just LHTML (see
     https://franz.com/support/documentation/6.0/doc/phtml.htm#lhtml) with some
@@ -297,7 +305,7 @@
          view
          (lambda (vnode)
            ,(let*
-             ( ;; Expand out all control cons
+             (;; Expand out all control cons
               (cc-expanded (expand-all-control-structures template))
               ;; Replace {} symbols with actual vnode accesses
               ({}-expanded (expand-interpolations cc-expanded fields)))
