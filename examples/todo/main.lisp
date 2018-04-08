@@ -12,7 +12,10 @@
 
   (rdf:register-component
    'reg ()
-   '((div class "container") :reg-form)))
+   '((div class "container")
+     ((div class "row justify-content-center my-5") (h1 (strong "Todo")))
+     ((div class "row justify-content-center mt-5")
+      ((div class "col-sm-12 col-lg-8") :reg-form)))))
 
 (defun splash-page ()
   (rdf:register-component
