@@ -103,9 +103,16 @@
 
 (defun defcomp (fields template)
   "
+  This should in general not be used by app devs - use the register-component
+  wrapper instead. This will make sure your component is added to the served .js
+  file. This function simply generates a parenscript expression to create a new
+  component type, and doesn't make sure this parenscript expression is rendered
+  into the served data.
+
   # Fields
   ## Example
   (defcomp (
+    :lifecycle ((oninit (chain console (log \"Hello, this is the component init\"))))
     :attrs (first-name last-name)
     :state (count 0)
     :computed (
@@ -141,6 +148,17 @@
   Methods cannot be interpolated into templates as values, as they might not
   return anything / take parameters. Use computed properties for this. The body
   of the method can contain interpolated values just like the computed properties.
+
+  Lifecycle methods can be defined inside :lifecycle in an assoc list. See the
+  examples & mithril documentation for all lifecycle method documentation. vnode
+  is automatically in scope, and interpolations can be used.
+  Available lifecycle methods:
+  :oninit
+  :onupdate
+  :onbeforeupdate
+  :onremove
+  :onbeforeremove
+  :oncreate
 
   Using @ to interpolate inc indicates an event listener.
 
@@ -218,12 +236,32 @@
     (with this defcomp macro). 'myAttr' is the name of an attribute on the
     component 'myComp'. Remember this performs kebab to camel case conversions,
     so you would actually define a component named 'my-comp' with an attribute
-    named 'my-attr'. "
+    named 'my-attr'."
   ;; Extract data from the fields list
   (let* ((state (loop for (k v) on (getf fields :state) by #'cddr collect (list k v)))
          (computed (getf fields :computed))
          (attrs (getf fields :attrs))
          (methods (getf fields :methods))
+         (lifecycle (getf fields :lifecycle))
+         ;; get lifecycle method bodies
+         (onupdate (mapcar (lambda (a) (expand-interpolations a fields))
+                              (cdr (assoc 'onupdate lifecycle :test
+                                      (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (onbeforeupdate (mapcar (lambda (a) (expand-interpolations a fields))
+                                    (cdr (assoc 'onbeforeupdate lifecycle :test
+                                            (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (onremove (mapcar (lambda (a) (expand-interpolations a fields))
+                              (cdr (assoc 'onremove lifecycle :test
+                                      (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (onbeforeremove (mapcar (lambda (a) (expand-interpolations a fields))
+                                    (cdr (assoc 'onbeforeremove lifecycle :test
+                                            (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (oncreate (mapcar (lambda (a) (expand-interpolations a fields))
+                              (cdr (assoc 'oncreate lifecycle :test
+                                      (lambda (s0 s1) (string= (string s0) (string s1)))))))
+         (oninit (mapcar (lambda (a) (expand-interpolations a fields))
+                           (cdr (assoc 'oninit lifecycle :test
+                                   (lambda (s0 s1) (string= (string s0) (string s1)))))))
          ;; Build state declarations of attrs for parenscript (these will go in the oninit method)
          (attr-state-decl (loop for a in attrs collect `(setf (@ vnode state ,a) (@ vnode attrs ,a))))
 
@@ -242,9 +280,18 @@
         (create
          ,@(loop for (k v) in computed-decl append (list k k))
          ,@(loop for (k v) in method-decl append (list k k))
+
+         ,@(if onupdate `(onupdate (lambda (vnode) ,@onupdate)))
+         ,@(if onbeforeupdate `(onbeforeupdate (lambda (vnode) ,@onbeforeupdate)))
+         ,@(if onremove `(onremove (lambda (vnode) ,@onremove)))
+         ,@(if onbeforeremove `(onbeforeremove (lambda (vnode) ,@onbeforeremove)))
+         ,@(if oncreate `(oncreate (lambda (vnode) ,@oncreate)))
+
+         ;; Lifecycle methods
          oninit (lambda (vnode)
                   ,@attr-state-decl
-                  ,@(loop for (k v) in state collect `(setf (@ vnode state ,k) ,v)))
+                  ,@(loop for (k v) in state collect `(setf (@ vnode state ,k) ,v))
+                  ,@oninit)
          view
          (lambda (vnode)
            ,(let*
@@ -392,9 +439,10 @@ mapping routes (strings) to component names (keywords)
 
 (defun render-app-css ()
   "Render the app's stylesheet"
+  (if (not *lass-styles*) (return-from render-app-css ""))
   (reduce (lambda (s0 s1) (concatenate 'string s0 s1))
           (mapcar #'lass:compile-and-write
-           (loop for (k v) on *lass-styles* by #'cddr append v))))
+                  (loop for (k v) on *lass-styles* by #'cddr append v))))
 
 (defun render-app-js ()
   "Given the current state (*routes* and *comp-list*), render an appropriate

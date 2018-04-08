@@ -27,6 +27,7 @@
            :raise-app-error
 
            ;; View (i.e. client) stuff
+           :defcomp
            :register-component
            :set-view-routes
            :add-initial-store-state

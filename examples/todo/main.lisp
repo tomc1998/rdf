@@ -8,13 +8,13 @@
   (bs:load-all)
 
   (rdf:register-component
-   'splash ()
+   'splash
+   ()
    '(div
      ((div class "jumbotron")
       (h1 "Todo app")
       ((a class "btn btn-primary" href "#!/reg") "Get started")
-      )
-    ))
+      )))
 
   (rdf:set-view-routes '(("/" splash)))
 
