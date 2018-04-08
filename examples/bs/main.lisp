@@ -17,24 +17,24 @@
   ;; Define our own component
   (rdf:register-component
    'home
-   '(:methods
-    ((dismiss () (@ (@ (! ".alert") alert) "close")))
-)
-   '(:bs-container
-     (:bs-row
-      ((:bs-col :class "my-col" :types (array "sm-12" "lg-6"))
+   ()
+   `((div class "container")
+     ((div class "row")
+      ((div class "my-col col-sm-12 col-lg-6 col-lg-6")
        "Item 1")
-      ((:bs-col :class "my-col" :types (array "sm-12" "lg-6"))
+      ((div class "my-col col-sm-12 col-lg-6 col-lg-6")
        "Item 2")
       )
-     (:bs-row
-      ((:bs-col :class "my-col" :types (array "sm-12" "md-6" "lg-4"))
+     ((div class "row")
+      ((div class "my-col col-sm-12 col-md-6 col-lg-4")
        "Item 3")
-      ((:bs-col :class "my-col" :types (array "sm-12" "md-6" "lg-4"))
+      ((div class "my-col col-sm-12 col-md-6 col-lg-4")
        "Item 4")
-      ((:bs-col :class "my-col" :types (array "sm-12" "md-12" "lg-4"))
+      ((div class "my-col col-sm-12 col-md-12 col-lg-4")
        "Item 5"))
-     ((div class "alert") "Hello" ((button class "btn" onclick {@dismiss}) "Dismiss"))
+     ((div class "alert alert-warning alert-dismissible fade show" role "alert")
+      "Hello"
+      ((button class "close" "data-dismiss" "alert") ,(code-char #x00d7)))
      )
    )
 

@@ -37,7 +37,7 @@
         <script src=\"/rdf/lib.js\"></script>
         <script src=\"/rdf/app.js\"></script>
       </body>
-    </html>" *additional-stylesheet-urls* *additional-script-urls*))
+    </html>" (reverse *additional-stylesheet-urls*) (reverse *additional-script-urls*)))
   (hunchentoot:define-easy-handler (app-css :uri "/rdf/style.css" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "text/css")
     (render-app-css))
