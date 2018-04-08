@@ -13,7 +13,7 @@
   (rdf:register-component
    'reg ()
    '((div class "container")
-     ((div class "row justify-content-center my-5") (h1 (strong "Todo")))
+     ((div class "row justify-content-center my-5") (h1 (strong "TODO")))
      ((div class "row justify-content-center mt-5")
       ((div class "col-sm-12 col-lg-8") :reg-form)))))
 
@@ -23,14 +23,18 @@
    '(:lifecycle ((onbeforeupdate (if {!store.session} (chain m route (set "/home"))))))
    '(div
      ((div class "jumbotron")
-      (h1 "Todo app")
-      ((a class "btn btn-primary" href "#!/reg") "Get started")
+      ((h1 class "display-4") "TODO")
+      ((p class "lead") "A todo-list application created with the cl-rdf framework")
+      (hr)
+      ((p class "lead")
+       ((a class "btn btn-primary btn-lg" role "button" href "#!/reg") "Get started"))
       ))))
 
 (defun home-page ()
   (rdf:register-component
    'home ()
-   '(div "Hello")))
+   '((div class "container") ((nav class "navbar fixed-top navbar-dark bg-dark ")
+                              ((a class "navbar-brand" href "#!/") "Hello")))))
 
 (defun client ()
   (rdf:clear-additional-scripts)
