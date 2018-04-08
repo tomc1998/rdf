@@ -63,6 +63,10 @@
   (:use "PARENSCRIPT" "COMMON-LISP")
   (:export :main))
 
+(defpackage :rdf-todo-example
+  (:use "PARENSCRIPT" "COMMON-LISP")
+  (:export :main))
+
 (asdf:defsystem rdf
   :description "A rapid development web framework"
   :depends-on (:corm :hunchentoot :cl-json :parenscript :str :ironclad :flexi-streams :lass)
@@ -87,10 +91,15 @@
 
 (asdf:defsystem rdf-full-example
   :author "Tom <thomascheng1998@gmail.com>"
-  :depends-on (:rdf)
+  :depends-on (:rdf :parenscript)
   :components ((:file "examples/full/main")))
 
 (asdf:defsystem rdf-bs-example
   :author "Tom <thomascheng1998@gmail.com>"
-  :depends-on (:rdf :bootstrap)
+  :depends-on (:rdf :bootstrap :parenscript)
   :components ((:file "examples/bs/main")))
+
+(asdf:defsystem rdf-todo-example
+  :author "Tom <thomascheng1998@gmail.com>"
+  :depends-on (:rdf :bootstrap :parenscript)
+  :components ((:file "examples/todo/main")))
