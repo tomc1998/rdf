@@ -70,6 +70,7 @@
                (:file "main/entity")
                (:file "main/view/view")
                (:file "main/view/lib")
+               (:file "main/view/control-cons")
                (:file "main/main"
                       :depends-on ("main/json-ser" "main/json-deser"
                                                    "main/view/view" "main/view/lib" "main/entity")
