@@ -25,7 +25,7 @@ to another page, and navigate to a login page."
        which contains the returned data, and a 'status' parameter which contains
        the HTTP status code.
 
-       Automatic error handling will be used, writing to {$store.rdf-app-error}
+       Automatic error handling will be used, writing to {!store.rdf-app-error}
        the returned error message. If you want to override this behaviour, pass
        in an error-callback function.
 

@@ -16,7 +16,10 @@
 
   ;; Define our own component
   (rdf:register-component
-   'home ()
+   'home
+   '(:methods
+    ((dismiss () (@ (@ (! ".alert") alert) "close")))
+)
    '(:bs-container
      (:bs-row
       ((:bs-col :class "my-col" :types (array "sm-12" "lg-6"))
@@ -30,7 +33,10 @@
       ((:bs-col :class "my-col" :types (array "sm-12" "md-6" "lg-4"))
        "Item 4")
       ((:bs-col :class "my-col" :types (array "sm-12" "md-12" "lg-4"))
-       "Item 5"))))
+       "Item 5"))
+     ((div class "alert") "Hello" ((button class "btn" onclick {@dismiss}) "Dismiss"))
+     )
+   )
 
   ;; Define routes
   (rdf:set-view-routes '(("/" home)))

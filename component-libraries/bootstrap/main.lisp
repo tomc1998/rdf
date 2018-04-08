@@ -3,10 +3,10 @@
 (defun register-container-row-column ()
   (rdf:register-component
    'bs-container '(:attrs (fluid class))
-   '((div class ($class {class} ($if {fluid} "container-fluid" "container")))
+   '((div class (!class {class} (!if {fluid} "container-fluid" "container")))
      {children}))
   (rdf:register-component
-   'bs-row '(:attrs (class)) '((div class ($class "row" {class})) {children}))
+   'bs-row '(:attrs (class)) '((div class (!class "row" {class})) {children}))
   (rdf:register-component
    'bs-col '(:attrs
             (;; Array of strings like (array 'sm-6' 'lg-4') for small, 6 columns,
@@ -19,8 +19,7 @@
                   (reduce (lambda (s0 s1) (+ s0 " " s1))
                           (mapcar (lambda (s) (+ "col-" s)) {types}))
                   "col"))))
-   '((div class ($class {full-bs-class-name} {class})) {children}))
-  )
+   '((div class (!class {full-bs-class-name} {class})) {children})))
 
 (defun load-all ()
   (print "Loading bootstrap components...")

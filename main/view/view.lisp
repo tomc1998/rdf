@@ -22,12 +22,12 @@
   "Given the expanded result of a symbol and the symbol it was expanded from,
   return an altered expanded symbol which finds the 'child' of the given object.
   For example, if the symbol is {foo.bar.baz}, replace the given expanded symbol
-  (which will be something like ($ (<expr to get foo>)) with ($ (@ (<expr to get
-  foo>) bar baz)). If the first element of the given expanded isn't $, or if the
+  (which will be something like (! (<expr to get foo>)) with (! (@ (<expr to get
+  foo>) bar baz)). If the first element of the given expanded isn't !, or if the
   symbol contains no '.', this simply returns the given expanded value with no
   transformation."
-  ;; Check that expanded is a cons with $ as the car
-  (if (or (not (consp expanded)) (not (eq '$ (car expanded))))
+  ;; Check that expanded is a cons with ! as the car
+  (if (or (not (consp expanded)) (not (eq '! (car expanded))))
       (return-from add-chain-from-interpolation-symbol expanded))
   (let* ((s (string symbol))
          ;; Unwrap the symbol if it's surrounded with {}
@@ -38,7 +38,7 @@
          ;; Intern splits
          (splits-symbols (loop for split in splits collect (intern split)))
          ;; Created the altered ps expression
-         (altered `($ (@ ,(second expanded) ,@(cdr splits-symbols)))))
+         (altered `(! (@ ,(second expanded) ,@(cdr splits-symbols)))))
     ;; Only return altered if there was more than 1 split (i.e. symbol contained a '.')
     (if (> (length splits) 1) altered expanded)))
 
@@ -55,7 +55,7 @@
      ;; Lookup the non-@ sign symbol in the table, then call that function
      ;; inside a lambda accepting the event
      (let ((expanded (getf symbol-table (get-root-interpolation-symbol (remove #\@ (string template))))))
-       (if expanded (add-chain-from-interpolation-symbol `($ (lambda (e) (,expanded vnode e))) template) template)))
+       (if expanded (add-chain-from-interpolation-symbol `(! (lambda (e) (,expanded vnode e))) template) template)))
     ;; If we're not an event listener symbol, we might just be a normal
     ;; interpolation - check for this
     ((typep template 'symbol)
@@ -74,17 +74,17 @@
        ;; Create a plist of all the state / computed / at... with ps expansions
        (symbol-table
         (append
-         '(:{children} ($ (@ vnode children)))
-         '(:{$store} ($ (@ window store)))
+         '(:{children} (! (@ vnode children)))
+         '(:{!store} (! (@ window store)))
          (loop for a in attrs
             append (list
                     (intern (format nil "{~a}" a) :keyword)
-                    `($ (@ vnode state ,a))))
+                    `(! (@ vnode state ,a))))
          ;; Compile computed property list into symbol table for rendering
          (loop for c in computed
             append (list
                     (intern (format nil "{~a}" (car c)) :keyword)
-                    `($ (,(car c) vnode))))
+                    `(! (,(car c) vnode))))
          ;; Compile method list. Don't compile the full method call,
          ;; only the names, allows for more customisation when
          ;; interpolating
@@ -96,7 +96,7 @@
          (loop for s in state
             append (list
                     (intern (format nil "{~a}" (car s)) :keyword)
-                    `($ (@ vnode state ,(car s)))
+                    `(! (@ vnode state ,(car s)))
                     )))))
     ;; Expand with our symbol table
     (expand-with-symbol-table template symbol-table)))
@@ -156,41 +156,41 @@
   syou to create 'container' components, which can have children inserted like
   any normal element.
 
-  {$store} can be used to access the store. Dotted notation can be used here,
-  for example: {$store.foo} would access the 'foo' field of the store object.
+  {!store} can be used to access the store. Dotted notation can be used here,
+  for example: {!store.foo} would access the 'foo' field of the store object.
 
   # Extra templating controls
-  A cons can be inserted with the car being a symbol beginning with $. This will
+  A cons can be inserted with the car being a symbol beginning with !. This will
   be expanded when compiling the template. Here are some examples:
 
-  ($loop for u in users (div \"Hello\", {u.first-name}))
+  (!loop for u in users (div \"Hello\", {u.first-name}))
   This will be expanded to a list of divs containing 'Hello, XXX' where XXX is
   the name of the user. 'users' should be a field of the current component,
   containing an array of objects, which all have the 'first-name' field.
 
-  ($model {my-value})
+  (!model {my-value})
   This can be placed as an attribute, and will bind the data of the element
   (let's say, and <input>) to the model & update the model when the element
   changes. This expands to bind the 'value' and 'onchange' attributes on the
   element. As such, this shouldn't be used if value or onchange is already used.
   Here is a full template example:
-  ((input ($model {my-value}) placeholder \"Input a value here\"))
+  ((input (!model {my-value}) placeholder \"Input a value here\"))
 
-  ($if {my-condition} (div \"my-condition is true\") (span \"my-condition is false\"))
+  (!if {my-condition} (div \"my-condition is true\") (span \"my-condition is false\"))
   You can perform conditional rendering with this. If the given condition is
   truthy, the first item (in this case a div) is inserted into the rendered
   markup. If the condition is falsey, the second item (in this case a span) is
   inserted into the markup. This can also be used in attributes:
-  ((div class ($if {my-condition} \"some-class\")) \"Hello)
+  ((div class (!if {my-condition} \"some-class\")) \"Hello)
   If 'my-condition' is true, this will apply 'some-class' to the element.
 
-  ($class \"class0 class1\" ($if {my-condition} \"class2\" \"class3\"))
-  This allows for more complex class application. $class takes a varargs list of
-  strings and $if controls. It applies the $if classes conditionally based on
+  (!class \"class0 class1\" (!if {my-condition} \"class2\" \"class3\"))
+  This allows for more complex class application. !class takes a varargs list of
+  strings and !if controls. It applies the !if classes conditionally based on
   the given condition, and appends all the strings together separating by a
   space.
   Strings can also be interpolated, for example:
-  ($class {my-class-attr})
+  (!class {my-class-attr})
   Where my-class-attr is some string field.
 
   # Template syntax
@@ -256,21 +256,21 @@
              (render (print {}-expanded)))))))))
 
 (defun expand-all-ps-injects (e)
-  "Used by try-expand-ps-inject to expand all $ inside a given block. This is
-for nested $."
+  "Used by try-expand-ps-inject to expand all ! inside a given block. This is
+for nested !."
   (if (listp e)
       (if (listp (car e))
           (loop for child in e collect (expand-all-ps-injects child))
-          (if (string= (string (car e)) "$") (expand-all-ps-injects (second e))
+          (if (string= (string (car e)) "!") (expand-all-ps-injects (second e))
               (loop for child in e collect (expand-all-ps-injects child))))
       e))
 
 (defun try-expand-ps-inject (e &optional default)
-  "Given an expression, checks whether it's a list with car $, if so returns the
+  "Given an expression, checks whether it's a list with car !, if so returns the
 cdr, otherwise returns nil."
   (if (typep e 'list)
       (if (typep (car e) 'list) default
-          (if (string= (string (car e)) "$") (expand-all-ps-injects (second e)) default)) default))
+          (if (string= (string (car e)) "!") (expand-all-ps-injects (second e)) default)) default))
 
 
 (defun render (lhtml)
@@ -324,7 +324,7 @@ cdr, otherwise returns nil."
     ))
 
 
-(defparameter *default-error-component* (defcomp () '(div {$store.rdf-app-error})))
+(defparameter *default-error-component* (defcomp () '(div {!store.rdf-app-error})))
 (defparameter *comp-list* ())
 (defparameter *error-component* *default-error-component*)
 (defparameter *routes* ())
@@ -333,7 +333,7 @@ cdr, otherwise returns nil."
 
 (defun add-initial-store-state (key value)
   "Add a key to the initial store state, and store the given PS value in it.
-  Store values can be accessed with the {$store} interpolation.
+  Store values can be accessed with the {!store} interpolation.
   # Example
   (add-initial-store-state 'count 0)"
   (setf (getf *init-state* key) value))

@@ -17,8 +17,8 @@
 
   (rdf:register-component
    :test-if '(:attrs (apply-class))
-   '((div class ($if {apply-class} "my-class"))
-     ($if {apply-class}
+   '((div class (!if {apply-class} "my-class"))
+     (!if {apply-class}
       (span "Applying class:" {apply-class})
       (span "Not applying class"))))
 
@@ -29,9 +29,9 @@
                                (app-req "/reg" {user} (lambda (res code)))))))
    '((form onsubmit {@reg})
      (label "Username")
-     ((input type "text" ($model {user.user}))) (br)
+     ((input type "text" (!model {user.user}))) (br)
      (label "Password")
-     ((input type "password" ($model {user.pass}))) (br)
+     ((input type "password" (!model {user.pass}))) (br)
      ((input type "submit"))))
 
   (rdf:register-component
@@ -42,9 +42,9 @@
                                                             (chain console (log res))))))))
    '((form onsubmit {@login})
      (label "Username")
-     ((input type "text" ($model {user.user}))) (br)
+     ((input type "text" (!model {user.user}))) (br)
      (label "Password")
-     ((input type "password" ($model {user.pass}))) (br)
+     ((input type "password" (!model {user.pass}))) (br)
      ((input type "submit"))))
 
   (rdf:register-component
@@ -56,7 +56,7 @@
      (h1 "Login")
      :login-form
      ((button onclick {@access-data}) "Access sensitive data")
-     (:test-children ((div class ($if 1 "asdtrue" "asdfalse")) "hello"))
+     (:test-children ((div class (!if 1 "asdtrue" "asdfalse")) "hello"))
      ((:test-if apply-class t))
      ((:test-if apply-class nil)))))
 
