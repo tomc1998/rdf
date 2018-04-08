@@ -184,6 +184,15 @@
   ((div class ($if {my-condition} \"some-class\")) \"Hello)
   If 'my-condition' is true, this will apply 'some-class' to the element.
 
+  ($class \"class0 class1\" ($if {my-condition} \"class2\" \"class3\"))
+  This allows for more complex class application. $class takes a varargs list of
+  strings and $if controls. It applies the $if classes conditionally based on
+  the given condition, and appends all the strings together separating by a
+  space.
+  Strings can also be interpolated, for example:
+  ($class {my-class-attr})
+  Where my-class-attr is some string field.
+
   # Template syntax
     Basically just LHTML (see
     https://franz.com/support/documentation/6.0/doc/phtml.htm#lhtml) with some
