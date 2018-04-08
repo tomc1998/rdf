@@ -132,6 +132,7 @@
        ;; Create a plist of all the state / computed / at... with ps expansions
        (symbol-table
         (append
+         '(:{children} ($ (@ vnode children)))
          '(:{$store} ($ (@ window store)))
          (loop for a in attrs
             append (list
