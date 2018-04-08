@@ -10,7 +10,8 @@
 
 (defpackage :rdf
   (:use  "PARENSCRIPT" "COMMON-LISP")
-  (:shadowing-import-from :corm :entity-already-exists :select-tree :insert-one :id)
+  (:shadowing-import-from :corm :entity-already-exists :select-tree
+                          :insert-one :id :insert-duplicate-error)
   (:shadowing-import-from :hunchentoot :session-value :log-message*)
   (:export :rdf-start
            :rdf-stop
@@ -44,6 +45,7 @@
            :entity-already-exists
            :select-tree
            :insert-one
+           :insert-duplicate-error
            :id
 
            ;; Hunchentoot session re-exports

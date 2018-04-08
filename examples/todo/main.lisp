@@ -2,8 +2,7 @@
 (in-package :rdf-todo-example)
 
 (defun model ()
-  (rdf:defentity user-auth ((email "VARCHAR(256)") (pass "CHAR(116)")) () T)
-  )
+  (rdf:defentity user-auth ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)) () T))
 
 (defun reg-page ()
   (bs:gen-form 'reg-form '(("email" "Email" "Enter your email here")
@@ -55,9 +54,8 @@
     (lambda (user-auth)
       (setf (slot-value user-auth 'pass) (rdf:hash-pwd (slot-value user-auth 'pass)))
       (rdf:log-message* :INFO "~a" (length (slot-value user-auth 'pass)))
-      (rdf:insert-one user-auth)
-      ))
-  )
+      (handler-case (rdf:insert-one user-auth)
+        (rdf:insert-duplicate-error () (rdf:raise-app-error "Email taken" 400))))))
 
 (defun main ()
   (model)
