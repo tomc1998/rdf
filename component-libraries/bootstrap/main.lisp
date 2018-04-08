@@ -2,8 +2,8 @@
 
 (defun register-container ()
   (rdf:register-component
-   'bs-container '(:attrs (fluid))
-   '((div class ($if {fluid} "container-fluid" "container")) {children}))
+   'bs-container '(:attrs (fluid class))
+   '((div class ($class {class} ($if {fluid} "container-fluid" "container"))) {children}))
   )
 
 (defun load-all ()

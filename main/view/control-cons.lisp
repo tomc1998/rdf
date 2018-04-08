@@ -40,6 +40,22 @@
         `(($ (if ,condition ,(render if-value) ,(render (fourth c)))))
         `(($ (if ,condition ,(render if-value)))))))
 
+(defun expand-class-control (c)
+  (let* ((try-expand-conditional-class
+         (lambda (c)
+           (if (listp c)
+               (progn
+                 (if (not (string= (string-downcase (car c)) "$if"))
+                     (error 'control-cons-parse-error
+                            :text
+                            (format nil "Unsupported cons inside $class: ~s
+                        - should start with $if" c)))
+                 (car (expand-if-control c))) c)))
+         (bindings (cons 'array (mapcar try-expand-conditional-class (cdr c)))))
+    `(($ (reduce (lambda (s0 s1)
+                   (concatenate 'string s0 " " s1)
+                   ) ,bindings)))))
+
 (defun try-expand-control-cons (c)
   "A control cons is a cons who's car begins with a special template symbol, one
     that begins with a $ (i.e. $loop or $if) - this function will return either nil
@@ -59,6 +75,7 @@
     ((string= (string-downcase (car c)) "$loop") (expand-loop-control c))
     ((string= (string-downcase (car c)) "$model") (expand-model-control c))
     ((string= (string-downcase (car c)) "$if") (expand-if-control c))
+    ((string= (string-downcase (car c)) "$class") (expand-class-control c))
     (t nil)))
 
 (defun expand-all-control-structures (template)

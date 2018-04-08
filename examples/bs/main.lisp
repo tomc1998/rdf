@@ -7,8 +7,13 @@
   ;; Load bootstrap components
   (bs:load-all)
 
+  ;; Load our own styles
+  (rdf:clear-lass 'my-lass)
+  (rdf:register-lass 'my-lass '((.my-container-class
+                                 :background-color "#F00")))
+
   ;; Define our own component
-  (rdf:register-component 'home () '(:bs-container (h1 "Hello")))
+  (rdf:register-component 'home () '((:bs-container class "my-container-class") (h1 "Hello")))
 
   ;; Define routes
   (rdf:set-view-routes '(("/" home)))

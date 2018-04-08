@@ -383,7 +383,9 @@ mapping routes (strings) to component names (keywords)
 
 (defun render-app-css ()
   "Render the app's stylesheet"
-  (lass:compile-and-write (loop for (k v) on *lass-styles* by #'cddr append v)))
+  (reduce (lambda (s0 s1) (concatenate 'string s0 s1))
+          (mapcar #'lass:compile-and-write
+           (loop for (k v) on *lass-styles* by #'cddr append v))))
 
 (defun render-app-js ()
   "Given the current state (*routes* and *comp-list*), render an appropriate
