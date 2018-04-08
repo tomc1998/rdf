@@ -33,6 +33,7 @@
            :entity-to-json
            :entity-from-json
            :set-client-default-unauthorized-behaviour
+           :*error-component*
            ;; View styling
            :register-lass 
            :clear-lass
