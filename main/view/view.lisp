@@ -187,7 +187,9 @@
       ((button onclick {@inc}) \"Increment\")))
   This defines a component with 2 attributes, a state called 'count', and some
   computed properties. The computed and attrs are used in the template with the { and }
-  chars.
+  chars. 'Dotted' notation can be used to access children in an object value.
+  For example: {foo.bar} will access the 'foo' field, and access the 'bar'
+  child of this.
   Computed properties are any value parenscript expression. Fields can be
   interpolated into the expression with (), and multiple forms can be evaluated
   inside a progn. Fields can be modified with (setf {field-name} <val>). They
@@ -206,6 +208,14 @@
 
   Attrs are all mutable, unlike in the mithril framework. This is achieved by
   creating extra state fields initialised to the values of the attrs.
+
+  # Special interpolations
+  {children} can be used for inserting this component's children. This allow
+  syou to create 'container' components, which can have children inserted like
+  any normal element.
+
+  {$store} can be used to access the store. Dotted notation can be used here,
+  for example: {$store.foo} would access the 'foo' field of the store object.
 
   # Extra templating controls
   A cons can be inserted with the car being a symbol beginning with $. This will
