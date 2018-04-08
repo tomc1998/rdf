@@ -1,5 +1,11 @@
 (in-package :bs)
 
+(defun register-container ()
+  (rdf:register-component
+   'bs-container '(:attrs (fluid))
+   '((div class ($if {fluid} "container-fluid" "container")) {children}))
+  )
+
 (defun load-all ()
   (print "Loading bootstrap components...")
   ;; Add bootstrap CSS
@@ -14,4 +20,6 @@
   (rdf:add-additional-script-url
    "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js")
 
+  ;; Load bootstrap components
+  (register-container)
   )

@@ -58,8 +58,7 @@
      ((button onclick {@access-data}) "Access sensitive data")
      (:test-children ((div class ($if 1 "asdtrue" "asdfalse")) "hello"))
      ((:test-if apply-class t))
-     ((:test-if apply-class nil))
-     )))
+     ((:test-if apply-class nil)))))
 
 (defun setup-routes ()
   (rdf:set-view-routes '(("/" home))))
