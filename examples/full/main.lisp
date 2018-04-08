@@ -12,9 +12,15 @@
   ;; Create components
 
   (rdf:register-component
-   :test-children
-   ()
+   :test-children ()
    '(div {children}))
+
+  (rdf:register-component
+   :test-if '(:attrs (apply-class))
+   '((div class ($if {apply-class} "my-class"))
+     ($if {apply-class}
+      (span "Applying class:" {apply-class})
+      (span "Not applying class"))))
 
   (rdf:register-component
    :reg-form
@@ -50,7 +56,9 @@
      (h1 "Login")
      :login-form
      ((button onclick {@access-data}) "Access sensitive data")
-     (:test-children (div "hello"))
+     (:test-children ((div class ($if 1 "asdtrue" "asdfalse")) "hello"))
+     ((:test-if apply-class t))
+     ((:test-if apply-class nil))
      )))
 
 (defun setup-routes ()

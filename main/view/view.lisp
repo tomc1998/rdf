@@ -29,6 +29,13 @@
       ($ (chain m (with-attr "value" (lambda (v) (setf ,binding v)))))
       value ,binding)))
 
+(defun expand-if-control (c)
+  (let ((condition (second c))
+        (if-value (third c)))
+    (if (= (length c) 4)
+        `(($ (if ,condition ,(render if-value) ,(render (fourth c)))))
+        `(($ (if ,condition ,(render if-value)))))))
+
 (defun try-expand-control-cons (c)
   "A control cons is a cons who's car begins with a special template symbol, one
     that begins with a $ (i.e. $loop or $if) - this function will return either nil
@@ -47,6 +54,7 @@
   (cond
     ((string= (string-downcase (car c)) "$loop") (expand-loop-control c))
     ((string= (string-downcase (car c)) "$model") (expand-model-control c))
+    ((string= (string-downcase (car c)) "$if") (expand-if-control c))
     (t nil)))
 
 (defun expand-all-control-structures (template)
@@ -294,7 +302,7 @@
               ;; Replace {} symbols with actual vnode accesses
               ({}-expanded (expand-interpolations cc-expanded fields)))
              ;; Render with the symbol table (expand control structures first)
-             (render {}-expanded))))))))
+             (render (print {}-expanded)))))))))
 
 (defun expand-all-ps-injects (e)
   "Used by try-expand-ps-inject to expand all $ inside a given block. This is
