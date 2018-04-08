@@ -9,11 +9,28 @@
 
   ;; Load our own styles
   (rdf:clear-lass 'my-lass)
-  (rdf:register-lass 'my-lass '((.my-container-class
-                                 :background-color "#F00")))
+  (rdf:register-lass 'my-lass '((.my-col
+                                 :border "1px solid #444"
+                                 :background-color "#888"
+                                 :padding "4px")))
 
   ;; Define our own component
-  (rdf:register-component 'home () '((:bs-container class "my-container-class") (h1 "Hello")))
+  (rdf:register-component
+   'home ()
+   '(:bs-container
+     (:bs-row
+      ((:bs-col :class "my-col" :types (array "sm-12" "lg-6"))
+       "Item 1")
+      ((:bs-col :class "my-col" :types (array "sm-12" "lg-6"))
+       "Item 2")
+      )
+     (:bs-row
+      ((:bs-col :class "my-col" :types (array "sm-12" "md-6" "lg-4"))
+       "Item 3")
+      ((:bs-col :class "my-col" :types (array "sm-12" "md-6" "lg-4"))
+       "Item 4")
+      ((:bs-col :class "my-col" :types (array "sm-12" "md-12" "lg-4"))
+       "Item 5"))))
 
   ;; Define routes
   (rdf:set-view-routes '(("/" home)))
