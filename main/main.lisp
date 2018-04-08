@@ -13,7 +13,12 @@
 
 
 ;; Redefine functions so we can re-export with nicer names
-(setf (fdefinition 'hash-pwd) #'ironclad:pbkdf2-hash-password-to-combined-string)
+(defun hash-pwd (pwd)
+  "Hash the given string pwd, returning the combined salt digest string. Produces a string of length 116."
+  (ironclad:pbkdf2-hash-password-to-combined-string (flexi-streams:string-to-octets pwd)))
+(defun check-pwd (pwd combined-salt-and-digest)
+  "Check that the string pwd equals the given combined salt and digest string"
+  (ironclad:pbkdf2-check-password (flexi-streams:string-to-octets pwd) combined-salt-and-digest))
 (setf (fdefinition 'check-pwd) #'ironclad:pbkdf2-check-password)
 (setf (fdefinition 'string-to-octets) #'flexi-streams:string-to-octets)
 

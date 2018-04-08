@@ -53,7 +53,6 @@
            ;; Re-export ironclad hash password & flexi stream functions
            :hash-pwd
            :check-pwd
-           :string-to-octets
            ))
 
 (defpackage :rdf-full-example

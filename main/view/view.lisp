@@ -300,7 +300,7 @@
               ;; Replace {} symbols with actual vnode accesses
               ({}-expanded (expand-interpolations cc-expanded fields)))
              ;; Render with the symbol table (expand control structures first)
-             (render (print {}-expanded)))))))))
+             (render {}-expanded))))))))
 
 (defun expand-all-ps-injects (e)
   "Used by try-expand-ps-inject to expand all ! inside a given block. This is
