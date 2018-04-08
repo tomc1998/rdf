@@ -18,7 +18,7 @@
     `((! ,(loop for b in body append
                (let ((expanded (expand-with-symbol-table b symbol-table)))
                  `(loop for item in ,target collect
-                       ,(render expanded))
+                       ,(render (expand-all-control-structures expanded)))
                  ))))))
 
 (defun expand-model-control (c)
@@ -37,8 +37,8 @@
   (let ((condition (second c))
         (if-value (third c)))
     (if (= (length c) 4)
-        `((! (if ,condition ,(render if-value) ,(render (fourth c)))))
-        `((! (if ,condition ,(render if-value)))))))
+        `((! (if ,condition ,(render (expand-all-control-structures if-value)) ,(render (fourth c)))))
+        `((! (if ,condition ,(render (expand-all-control-structures if-value))))))))
 
 (defun expand-class-control (c)
   (let* ((try-expand-conditional-class

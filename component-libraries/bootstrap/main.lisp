@@ -59,13 +59,18 @@
 
   ;; Load error component
   (rdf:register-component
-   'bs-error-component ()
+   'bs-error-component
+   '(:methods ((onclick () (setf {!store.rdf-app-error} nil))))
    `(div
-     (!if {!store.rdf-app-error}
-          ((div class "container")
-           ((div class "row" style (create margin-bottom "10px" position "fixed"))
-            ((div class "alert alert-warning alert-dismissible fade show" role "alert")
-             {!store.rdf-app-error}
-             ((button class "close" "data-dismiss" "alert") ,(code-char #x00d7))))))))
+     (!if
+      {!store.rdf-app-error}
+      ((div class "container")
+       ((div class "row mt-1 justify-content-center" style (create top "5px" left "5px" right "5px"
+                                                                   position "fixed"))
+        ((div class "col-sm-12 col-md-9 col-lg-6")
+         ((div class (!class "alert alert-danger"
+                             (!if {!store.rdf-app-error} "show" "hide")) role "alert")
+          {!store.rdf-app-error}
+          ((button class "ml-2 close" onclick {@onclick}) ,(code-char #x00d7)))))))))
   (setf rdf:*error-component* 'bs-error-component)
   )
