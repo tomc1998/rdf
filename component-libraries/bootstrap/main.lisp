@@ -65,8 +65,9 @@
      (!if
       {!store.rdf-app-error}
       ((div class "container")
-       ((div class "row mt-1 justify-content-center" style (create top "5px" left "5px" right "5px"
-                                                                   position "fixed"))
+       ((div class "row mt-1 justify-content-center"
+             style (create top "5px" left "5px" right "5px"
+                     position "fixed" z-index "9999"))
         ((div class "col-sm-12 col-md-9 col-lg-6")
          ((div class (!class "alert alert-danger"
                              (!if {!store.rdf-app-error} "show" "hide")) role "alert")
