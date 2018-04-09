@@ -85,7 +85,8 @@
                                  placeholder "Add a todo"))))
   (rdf:register-component
    'home
-   '(:methods ((add-todo (todo)
+   '(:lifecycle ((oninit (rdf:dispatch-action fetch-todos)))
+     :methods ((add-todo (todo)
                 (app-req "/add-todo" (array todo)
                          (lambda (res) (rdf:dispatch-action fetch-todos))))))
    '((div class "container")
