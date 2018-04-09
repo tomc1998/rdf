@@ -73,5 +73,4 @@
                              (!if {!store.rdf-app-error} "show" "hide")) role "alert")
           {!store.rdf-app-error}
           ((button class "ml-2 close" onclick {@onclick}) ,(code-char #x00d7)))))))))
-  (setf rdf:*error-component* 'bs-error-component)
-  )
+  (setf rdf:*error-component* 'bs-error-component))

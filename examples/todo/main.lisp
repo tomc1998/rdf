@@ -2,7 +2,8 @@
 (in-package :rdf-todo-example)
 
 (defun model ()
-  (rdf:defentity user-auth ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)) () T))
+  (rdf:defentity user-auth ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)) () T)
+  (rdf:defentity todo ((body "VARCHAR(2048)") (done "TINYINT(1)" :default "0")) (user-auth) T))
 
 (defun reg-page ()
   (bs:gen-form 'reg-form '(("email" "Email" "Enter your email here")
@@ -19,7 +20,9 @@
 (defun login-page ()
   (bs:gen-form 'login-form '(("email" "Email" "Enter the email you used to sign up")
                              ("pass" "Password" "Enter your password"))
-               '(app-req "/login" (array obj) (lambda () (chain m route (set "/home")))))
+               '(app-req "/login" (array obj)
+                 (lambda (id) (setf {!store.session.user-id} id)
+                         (chain m route (set "/home")))))
   (rdf:register-component
    'login ()
    '((div class "container")
@@ -52,11 +55,34 @@
        (div ((a class "btn btn-link px-0" role "button" href "#!/login") "I already have an account")))
       ))))
 
+(defun nav-bar ()
+  (rdf:register-component
+   'nav-bar ()
+   '((div class "row" style (create height "56px"))
+     ((nav class "navbar fixed-top navbar-dark bg-dark ")
+                        ((a class "navbar-brand" href "#!/") "TODO")))))
+
 (defun home-page ()
   (rdf:register-component
-   'home ()
-   '((div class "container") ((nav class "navbar fixed-top navbar-dark bg-dark ")
-                              ((a class "navbar-brand" href "#!/") "Hello")))))
+   'add-todo-form
+   '(:state (todo (create))
+     :attrs (onsubmit)
+    :methods ((submit () ({onsubmit} {todo}))))
+   '((form onsubmit {@onsubmit}) ((input (!model {todo.body}) type "text" placeholder "Add a todo"))))
+  (rdf:register-component
+   'home
+   '(:methods ((add-todo (todo) (app-req "/add-todo" (array todo) (lambda (res) (alert res)))))
+          )
+   '((div class "container")
+     :nav-bar
+     ((div class "row") (h2 "Your TODO list"))
+     ((div class "row") ((:add-todo-form onsubmit {@add-todo})))
+     ((div class "row")
+      ((ul class "list-group")
+       (!loop for todo in {!store.todos}
+              ((li class "list-group-item") {todo}))))
+     )
+   ))
 
 (defun client ()
   (rdf:clear-additional-scripts)
@@ -64,7 +90,9 @@
   ;; Load Bootstrap
   (bs:load-all)
   ;; Setup all components & routes
-  (rdf:add-initial-store-state 'session nil)
+  (rdf:add-initial-store-state 'session '(create))
+  (rdf:add-initial-store-state 'todos '(array))
+  (nav-bar)
   (home-page)
   (splash-page)
   (reg-page)
@@ -75,9 +103,12 @@
                          ("/reg" reg)
                          ("/check-email" check-email-verif)
                          ("/login" login)
-                         )))
+                         ))
+  ;; Set error behaviour
+  (rdf:set-client-default-unauthorized-behaviour '(chain m route (set "/login"))))
 
 (defun server ()
+  (setf rdf:*verify-auth* (lambda (type) (declare (ignore type)) (rdf:session-value 'user-id)))
   (rdf:define-app-req "/reg" (user-auth)
     (lambda (user-auth)
       (setf (slot-value user-auth 'pass) (rdf:hash-pwd (slot-value user-auth 'pass)))
@@ -89,8 +120,14 @@
                                     `(= (user-auth email) ,(slot-value user-auth 'email)))))
         (if (not users) (rdf:raise-app-error "Incorrect email or password" 400))
         (let ((pwd-hash (slot-value (caar users) 'pass)))
-             (if (not (rdf:check-pwd (slot-value user-auth 'pass) pwd-hash))
-                 (rdf:raise-app-error "Incorrect email or password" 400))))))
+          (if (not (rdf:check-pwd (slot-value user-auth 'pass) pwd-hash))
+              (rdf:raise-app-error "Incorrect email or password" 400)))
+        (setf (rdf:session-value 'user-id) (slot-value (caar users) 'rdf:id))
+        (slot-value (caar users) 'rdf:id))))
+  (rdf:define-app-req "/add-todo" (todo)
+    (lambda (todo)
+      (setf (slot-value todo 'parent-user-auth-id) (rdf:session-value 'user-id))
+      (rdf:insert-one todo)) :require-auth t)
   )
 
 (defun main ()
