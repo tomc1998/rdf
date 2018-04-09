@@ -2,7 +2,7 @@
 
 (defun model ()
   (rdf:defentity user-auth ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)))
-  (rdf:defentity todo ((body "VARCHAR(2048)") (done "TINYINT(1)" :default "0")) (user-auth) T))
+  (rdf:defentity todo ((body "VARCHAR(2048)") (done "TINYINT(1)" :default "0")) (user-auth)))
 
 (defun reg-page ()
   (bs:gen-form 'reg-form '(("email" "Email" "Enter your email here")
@@ -62,12 +62,31 @@
                         ((a class "navbar-brand" href "#!/") "TODO")))))
 
 (defun todo ()
+  (rdf:register-lass
+   'todo
+   '((.todo-check
+      :background-color "#fff"
+      :cursor pointer
+      :transition background-color 0.1s
+      )
+     ((:and .todo-check :hover)
+      :background-color "#eaeaea")
+     ))
+
   (rdf:register-component
    'todo
    '(:attrs (todo))
-   '((div class "d-flex align-items-center")
-     ((input type "checkbox"))
-     ((span class "col") {todo.body}))
+   '((div key {todo.id} class "border rounded my-1 my-md-2 my-lg-3")
+     ((div class "d-flex align-items-center p-3 todo-body" style (create overflow-x "auto"))
+      ((div class "border rounded p-2 todo-check"))
+      ((span class "col") {todo.body}))
+     ((hr class "my-0"))
+     ((div class "d-flex align-items-center justify-content-around todo-controls")
+      ((button class "btn btn-link btn-sm") "View details")
+      ((button class "btn btn-link btn-sm") "Delete")
+      ((button class "btn btn-link btn-sm") "Edit")
+      )
+     )
    ))
 
 (defun home-page ()
@@ -89,7 +108,7 @@
      :methods ((add-todo (todo)
                 (app-req "/add-todo" (array todo)
                          (lambda (res) (rdf:dispatch-action fetch-todos))))))
-   '((div class "container")
+   '((div class "container-fluid px-0")
      :nav-bar
      ((div class "row mt-3 justify-content-center")
       ((div class "col-lg-6 col-md-8 col-sm-12")
@@ -97,7 +116,7 @@
      ((div class "row justify-content-center")
       ((div class "col-sm-12 col-md-8 col-lg-6")
        (!loop for t in {!store.todos}
-              ((div key {t.id} class "border rounded my-1 p-3") ((:todo todo {t}))))))
+              ((:todo todo {t})))))
      )))
 
 (defun client ()
@@ -122,7 +141,8 @@
                          ("/login" login)
                          ))
   ;; Set error behaviour
-  (rdf:set-client-default-unauthorized-behaviour '(chain m route (set "/login"))))
+  (rdf:set-client-default-unauthorized-behaviour '(chain m route (set "/login")))
+  )
 
 (defun server ()
   (setf rdf:*verify-auth* (lambda (type) (declare (ignore type)) (rdf:session-value 'user-id)))
@@ -151,8 +171,8 @@
       (let ((tree (rdf:select-tree
                    '(todo) :where `(= ,(rdf:session-value 'user-id)
                                       (todo parent-user-auth-id)))))
-       (rdf:log-message* :INFO "~s" (class-of 3))
-       (mapcar #'car tree)))
+        (rdf:log-message* :INFO "~s" (class-of 3))
+        (mapcar #'car tree)))
     :require-auth t))
 
 (defun main ()
