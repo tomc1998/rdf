@@ -32,6 +32,8 @@
            :register-component
            :set-view-routes
            :add-initial-store-state
+           :add-store-action
+           :dispatch-action
            :entity-to-json
            :entity-from-json
            :set-client-default-unauthorized-behaviour

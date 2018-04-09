@@ -9,6 +9,12 @@ value for this might be to call 'm.route.set', the mithril function to navigate
 to another page, and navigate to a login page."
   (setf client-default-unauthorised-behaviour expr))
 
+(defpsmacro dispatch-action (action-name &optional params callback error-callback)
+  `(let ((res (chain window store-actions ,action-name (apply ,params))))
+     ,(if callback `(chain res (then ,callback)))
+     ,(if error-callback `(chain res (then ,error-callback)))
+     ))
+
 (defun render-lib-js ()
   "Returns a js library with convenience functions"
   (eval
@@ -66,4 +72,5 @@ to another page, and navigate to a login page."
                              (if (= (@ res status) 401)
                                  ,client-default-unauthorised-behaviour
                                  (setf (@ window store rdf-app-error) (@ parsed error)))))
-                       ))))))))))
+                       ))))))
+          ))))

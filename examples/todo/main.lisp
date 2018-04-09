@@ -1,8 +1,7 @@
-
 (in-package :rdf-todo-example)
 
 (defun model ()
-  (rdf:defentity user-auth ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)) () T)
+  (rdf:defentity user-auth ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)))
   (rdf:defentity todo ((body "VARCHAR(2048)") (done "TINYINT(1)" :default "0")) (user-auth) T))
 
 (defun reg-page ()
@@ -62,27 +61,43 @@
      ((nav class "navbar fixed-top navbar-dark bg-dark ")
                         ((a class "navbar-brand" href "#!/") "TODO")))))
 
+(defun todo ()
+  (rdf:register-component
+   'todo
+   '(:attrs (todo))
+   '((div class "d-flex align-items-center")
+     ((input type "checkbox"))
+     ((span class "col") {todo.body}))
+   ))
+
 (defun home-page ()
+  (rdf:add-store-action
+   'fetch-todos ()
+   '(app-req "/get-todos" () (lambda (res) (setf {!store.todos} res))))
   (rdf:register-component
    'add-todo-form
-   '(:state (todo (create))
+   '(:state (todo (create body "" done false))
      :attrs (onsubmit)
-    :methods ((submit () ({onsubmit} {todo}))))
-   '((form onsubmit {@onsubmit}) ((input (!model {todo.body}) type "text" placeholder "Add a todo"))))
+     :methods ((submit () (progn ({onsubmit} {todo}) (setf {todo.body} "")))))
+   '((form onsubmit {@submit}) ((input style (create width "100%")
+                                 (!model {todo.body})
+                                 type "text"
+                                 placeholder "Add a todo"))))
   (rdf:register-component
    'home
-   '(:methods ((add-todo (todo) (app-req "/add-todo" (array todo) (lambda (res) (alert res)))))
-          )
+   '(:methods ((add-todo (todo)
+                (app-req "/add-todo" (array todo)
+                         (lambda (res) (rdf:dispatch-action fetch-todos))))))
    '((div class "container")
      :nav-bar
-     ((div class "row") (h2 "Your TODO list"))
-     ((div class "row") ((:add-todo-form onsubmit {@add-todo})))
-     ((div class "row")
-      ((ul class "list-group")
-       (!loop for todo in {!store.todos}
-              ((li class "list-group-item") {todo}))))
-     )
-   ))
+     ((div class "row mt-3 justify-content-center")
+      ((div class "col-lg-6 col-md-8 col-sm-12")
+       ((:add-todo-form onsubmit {@add-todo}))))
+     ((div class "row justify-content-center")
+      ((div class "col-sm-12 col-md-8 col-lg-6")
+       (!loop for t in {!store.todos}
+              ((div key {t.id} class "border rounded my-1 p-3") ((:todo todo {t}))))))
+     )))
 
 (defun client ()
   (rdf:clear-additional-scripts)
@@ -93,6 +108,7 @@
   (rdf:add-initial-store-state 'session '(create))
   (rdf:add-initial-store-state 'todos '(array))
   (nav-bar)
+  (todo)
   (home-page)
   (splash-page)
   (reg-page)
@@ -128,7 +144,15 @@
     (lambda (todo)
       (setf (slot-value todo 'parent-user-auth-id) (rdf:session-value 'user-id))
       (rdf:insert-one todo)) :require-auth t)
-  )
+  (rdf:define-app-req "/get-todos" ()
+    (lambda ()
+      ;; Select all todos belonging to this user
+      (let ((tree (rdf:select-tree
+                   '(todo) :where `(= ,(rdf:session-value 'user-id)
+                                      (todo parent-user-auth-id)))))
+       (rdf:log-message* :INFO "~s" (class-of 3))
+       (mapcar #'car tree)))
+    :require-auth t))
 
 (defun main ()
   (model)

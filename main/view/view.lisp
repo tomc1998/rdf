@@ -376,6 +376,8 @@ cdr, otherwise returns nil."
 (defparameter *error-component* *default-error-component*)
 (defparameter *routes* ())
 (defparameter *init-state* ())
+(defparameter *store-computed* ())
+(defparameter *store-actions* ())
 (defparameter *lass-styles* ())
 
 (defun add-initial-store-state (key value)
@@ -385,6 +387,32 @@ cdr, otherwise returns nil."
   (add-initial-store-state 'count 0)"
   (setf (getf *init-state* key) value))
 
+(defun add-store-computed (name &rest body)
+  "Add a computed property to the store. This can be accessed just like normal
+  store properties, and the body forms will be executed (body forms should be
+  valid parenscript, this will be run on the client)
+  The name is the name of the field - if name is 'foo', you can access this
+  property with {!store.foo}. If name is 'foo.bar', you can access that property
+  with {!store.foo.bar}."
+  (error 'error "unimplemented"))
+
+(defun add-store-action (name params &rest body)
+  "Add an action to the store. An action is some code which by convention will
+  run some code, normally asynchronous (i.e. requesting some data), then update
+  the store. For naming rules, see add-store-computed. The body forms should
+  return a promise which completes when the action is completed. The body forms
+  should be valid parenscript.
+  Params is a list of arguments the action will take. These will be in scope for the body forms.
+
+  # Example
+  (add-store-action 'fetch-data (page) '(app-req \"/fetch-data\" (array page)))
+  This adds a store action called 'fetch-data', which called the '/fetch-data'
+  app-req and passes in the given page number.
+"
+  (push `(lambda (,@params) ,@(expand-all-ps-injects
+                               (expand-with-symbol-table body '(:{!store} (! (@ window store))))))
+        *store-actions*)
+  (push name *store-actions*))
 
 (defun register-lass (name lass)
   "Register the given LASS (lisp css) rules to the given name. If the name has
@@ -418,6 +446,8 @@ mapping routes (strings) to component names (keywords)
          `(ps
             ;; Create store
             (setf (@ window store) (create ,@*init-state*))
+            ;; Add store actions
+            (setf (@ window store-actions) (create ,@*store-actions*))
             ;; Mount mithril routes
             (let* (append (root (chain document (get-element-by-id "rdf-content")))
                           (error-flash (chain document (get-element-by-id "rdf-error-flash")))
