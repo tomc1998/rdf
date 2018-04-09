@@ -12,7 +12,7 @@
   (rdf:register-component
    'reg ()
    '((div class "container")
-     ((div class "row justify-content-center my-5") (h1 (strong "TODO Create your account")))
+     ((div class "row justify-content-center my-5") ((h1 style "text-align: center") (strong "Create your account")))
      ((div class "row justify-content-center mt-5")
       ((div class "col-sm-12 col-lg-8") :reg-form)))))
 
@@ -23,7 +23,7 @@
   (rdf:register-component
    'login ()
    '((div class "container")
-     ((div class "row justify-content-center my-5") (h1 (strong "TODO Login")))
+     ((div class "row justify-content-center my-5") ((h1 style "text-align: center") (strong "Login")))
      ((div class "row justify-content-center mt-5")
       ((div class "col-sm-12 col-lg-8") :login-form)))))
 
@@ -48,7 +48,8 @@
       ((p class "lead") "A todo-list application created with the cl-rdf framework")
       (hr)
       ((p class "lead")
-       ((a class "btn btn-primary btn-lg" role "button" href "#!/reg") "Get started"))
+       (div ((a class "btn btn-primary btn-lg" role "button" href "#!/reg") "Get started"))
+       (div ((a class "btn btn-link px-0" role "button" href "#!/login") "I already have an account")))
       ))))
 
 (defun home-page ()
