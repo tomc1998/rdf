@@ -40,6 +40,8 @@
                  (loop for (k v) on o by #'cddr
                       collect (format nil "\"~a\":~a" (kebab-to-camel-case (string-downcase k)) (to-json v))))
          (format nil "[~{~a~^,~}]" (loop for x in o collect (to-json x)))))
+    ;; serialise lisp object
+    ((typep o 'standard-object) (to-json (entity-to-json o)))
     ((eq o t) "true")
     ((eq o nil) "false")
     (t (error 'malformed-to-json-input :text (format nil "Cannot convert ~a to JSON" o)))))
