@@ -7,7 +7,9 @@
 authorization issues. By default, this simply alerts 'unauthorised'. A good
 value for this might be to call 'm.route.set', the mithril function to navigate
 to another page, and navigate to a login page."
-  (setf client-default-unauthorised-behaviour expr))
+  (setf client-default-unauthorised-behaviour
+        (expand-all-ps-injects
+         (expand-with-symbol-table expr '(:{!store} (! (@ window store)))))))
 
 (defpsmacro dispatch-action (action-name &optional params callback error-callback)
   `(let ((res (chain window store-actions ,action-name (apply ,params))))

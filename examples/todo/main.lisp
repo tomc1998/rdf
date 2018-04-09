@@ -21,7 +21,7 @@
                              ("pass" "Password" "Enter your password"))
                '(app-req "/login" (array obj)
                  (lambda (id) (setf {!store.session.user-id} id)
-                         (chain m route (set "/home")))))
+                         (chain m route (set "/")))))
   (rdf:register-component
    'login ()
    '((div class "container")
@@ -43,7 +43,7 @@
 (defun splash-page ()
   (rdf:register-component
    'splash
-   '(:lifecycle ((onbeforeupdate (if {!store.session} (chain m route (set "/home"))))))
+   '(:lifecycle ((oninit (if {!store.session} (chain m route (set "/"))))))
    '(div
      ((div class "jumbotron")
       ((h1 class "display-4") "TODO")
@@ -101,10 +101,13 @@
    '((form onsubmit {@submit}) ((input style (create width "100%")
                                  (!model {todo.body})
                                  type "text"
-                                 placeholder "Add a todo"))))
+                                 placeholder "Add an item"))))
   (rdf:register-component
    'home
-   '(:lifecycle ((oninit (rdf:dispatch-action fetch-todos)))
+   '(:lifecycle ((oninit (progn
+                           (if (not {!store.session})
+                               (chain m route (set "/get-started"))
+                               (rdf:dispatch-action fetch-todos)))))
      :methods ((add-todo (todo)
                 (app-req "/add-todo" (array todo)
                          (lambda (res) (rdf:dispatch-action fetch-todos))))))
@@ -134,14 +137,15 @@
   (reg-page)
   (login-page)
   (check-email-verif-page)
-  (rdf:set-view-routes '(("/" splash)
-                         ("/home" home)
+  (rdf:set-view-routes '(("/get-started" splash)
+                         ("/" home)
                          ("/reg" reg)
                          ("/check-email" check-email-verif)
                          ("/login" login)
                          ))
   ;; Set error behaviour
-  (rdf:set-client-default-unauthorized-behaviour '(chain m route (set "/login")))
+  (rdf:set-client-default-unauthorized-behaviour '(progn (setf {!store.session} (create))
+                                                   (chain m route (set "/login"))))
   )
 
 (defun server ()
