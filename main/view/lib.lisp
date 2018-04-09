@@ -12,7 +12,7 @@ to another page, and navigate to a login page."
          (expand-with-symbol-table expr '(:{!store} (! (@ window store)))))))
 
 (defpsmacro dispatch-action (action-name &optional params callback error-callback)
-  `(let ((res (chain window store-actions ,action-name (apply ,params))))
+  `(let ((res (chain window store-actions ,action-name (apply null ,params))))
      ,(if callback `(chain res (then ,callback)))
      ,(if error-callback `(chain res (then ,error-callback)))
      ))

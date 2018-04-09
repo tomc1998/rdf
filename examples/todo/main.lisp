@@ -62,30 +62,55 @@
                         ((a class "navbar-brand" href "#!/") "TODO")))))
 
 (defun todo ()
+  (rdf:add-store-action
+   'set-done '(todo-id done)
+   '(app-req "/set-done" (array (create id todo-id done done)) (lambda (res))))
+
   (rdf:register-lass
    'todo
    '((.todo-check
       :background-color "#fff"
       :cursor pointer
+      :border "1px solid #999"
       :transition background-color 0.1s
       )
      ((:and .todo-check :hover)
       :background-color "#eaeaea")
+     (.todo-checked
+      :background-color "#bbb"
+      :color "#999"
+      (.todo-check
+       :border "1px solid #ccc"
+       :background-color "#bbb")
+      )
      ))
 
   (rdf:register-component
    'todo
-   '(:attrs (todo))
-   '((div key {todo.id} class "border rounded my-1 my-md-2 my-lg-3")
-     ((div class "d-flex align-items-center p-3 todo-body" style (create overflow-x "auto"))
-      ((div class "border rounded p-2 todo-check"))
+   '(:attrs (todo)
+     :methods ((on-done ()
+                (rdf:dispatch-action
+                 set-done
+                 (array {todo.id} (not {todo.done}))
+                 (lambda () (setf {todo.done} (not {todo.done})))))))
+   '((div key {todo.id}
+      class (!class "border rounded my-1 my-md-2 my-lg-3"
+             (!if {todo.done} "todo-checked")))
+     ;; Todo body
+     ((div class "d-flex align-items-center p-3 todo-body"
+       style (create overflow-x "auto"))
+      ;; 'checked' box
+      ((div class "rounded p-2 todo-check"
+            onclick {@on-done}))
       ((span class "col") {todo.body}))
      ((hr class "my-0"))
-     ((div class "d-flex align-items-center justify-content-around todo-controls")
-      ((button class "btn btn-link btn-sm") "View details")
-      ((button class "btn btn-link btn-sm") "Delete")
-      ((button class "btn btn-link btn-sm") "Edit")
-      )
+     ;; Todo controls
+     (!if (not {todo.done})
+      ((div class "d-flex align-items-center justify-content-around todo-controls")
+       ((button class "btn btn-link btn-sm") "View details")
+       ((button class "btn btn-link btn-sm") "Delete")
+       ((button class "btn btn-link btn-sm") "Edit")
+       ))
      )
    ))
 
@@ -177,7 +202,9 @@
                                       (todo parent-user-auth-id)))))
         (rdf:log-message* :INFO "~s" (class-of 3))
         (mapcar #'car tree)))
-    :require-auth t))
+    :require-auth t)
+  (rdf:define-app-req "/set-done" (todo) (lambda (todo) (rdf:update todo 'done) ()))
+  )
 
 (defun main ()
   (model)
