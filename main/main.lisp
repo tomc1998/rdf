@@ -19,7 +19,6 @@
 (defun check-pwd (pwd combined-salt-and-digest)
   "Check that the string pwd equals the given combined salt and digest string"
   (ironclad:pbkdf2-check-password (flexi-streams:string-to-octets pwd) combined-salt-and-digest))
-(setf (fdefinition 'check-pwd) #'ironclad:pbkdf2-check-password)
 (setf (fdefinition 'string-to-octets) #'flexi-streams:string-to-octets)
 
 (defun setup-view-routes ()
