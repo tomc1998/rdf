@@ -94,8 +94,7 @@
       (.todo-check
        :border "1px solid #ccc"
        :background-color "#bbb")
-      )
-     ))
+      )))
 
   (rdf:register-component
    'todo
@@ -142,7 +141,10 @@
                            (if (not {!store.session})
                                (chain m route (set "/get-started"))
                                (rdf:dispatch-action fetch-todos)))))
-     :methods ((add-todo (todo)
+     :methods ((delete-all-done ()
+                (app-req "/delete-all-todos" (array {!store.todos-done})
+                         (lambda (res) (rdf:dispatch-action fetch-todos))))
+               (add-todo (todo)
                 (app-req "/add-todo" (array todo)
                          (lambda (res) (rdf:dispatch-action fetch-todos))))))
    '((div class "container-fluid px-0")
@@ -154,11 +156,15 @@
       ((div class "col-sm-12 col-md-8 col-lg-6")
        (!loop for todo in {!store.todos-not-done}
               ((:todo key {todo.id} todo {todo})))))
-     (hr)
-     ((div class "row justify-content-center")
-      ((div class "col-sm-12 col-md-8 col-lg-6")
-       (!loop for todo in {!store.todos-done}
-              ((:todo key {todo.id} todo {todo})))))
+     (!if (> (length {!store.todos-done}) 0)
+      (div
+       (hr)
+       ((div class "row justify-content-center")
+        ((button class "btn btn-white" onclick {@delete-all-done}) "Delete all completed tasks"))
+       ((div class "row justify-content-center")
+        ((div class "col-sm-12 col-md-8 col-lg-6")
+         (!loop for todo in {!store.todos-done}
+                ((:todo key {todo.id} todo {todo})))))))
      )))
 
 (defun client ()
@@ -172,7 +178,7 @@
   (rdf:add-store-computed 'todos-done '(loop for todo in {!store.todos}
                                           if (@ todo done) collect todo))
   (rdf:add-store-computed 'todos-not-done '(loop for todo in {!store.todos}
-                                          if (not (@ todo done)) collect todo))
+                                              if (not (@ todo done)) collect todo))
   (nav-bar)
   (todo)
   (home-page)
@@ -222,6 +228,7 @@
     :require-auth t)
   (rdf:define-app-req "/set-done" (todo) (lambda (todo) (rdf:update-entity todo 'done) ()))
   (rdf:define-app-req "/delete-todo" (todo) (lambda (todo) (rdf:delete-entity todo) ()))
+  (rdf:define-app-req "/delete-all-todos" ((todo)) (lambda (todos) (rdf:delete-all todos) ()))
   )
 
 (defun main ()

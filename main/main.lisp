@@ -110,6 +110,8 @@ handling."
   Each value is a symbol or nil:
   - If the parameter is a symbol, it's the name of an entity to parse from the
     JSON data.
+  - If the parameter is a list, the first and only element of the list is the
+    name of an entity. This signifies an array of this entity in the json data.
   - If the parameter is nil, it's parsed as an arbitrary lisp value - See the
     'allowed arbitrary values' section below
 

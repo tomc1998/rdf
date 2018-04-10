@@ -51,10 +51,7 @@
   (push name *entity-list*)
   `(corm:defentity ,name ,slots :parents ,parents :override ,override))
 
-(defun entity-from-json (entity data)
-  "Given an entity name and some parsed json data (i.e. json data in lisp form)
-parse that into and instance of the given entity class"
-  ;; Create an instance of the entity
+(defun single-entity-from-json (entity data)
   (let* ((e (make-instance entity))
          ;; Get all this entity's slots
          (slots (mapcar #'sb-mop:slot-definition-name
@@ -66,6 +63,21 @@ parse that into and instance of the given entity class"
            (setf (slot-value e s) val)))
     ;; Return the entity
     e))
+
+(defun entity-from-json (entity-parse-clue data)
+  "Given an entity name and some parsed json data (i.e. json data in lisp form)
+parse that into and instance of the given entity class"
+  ;; First, strip [] from the entity if it's around
+  (let* ((is-array nil)
+        (entity (if (listp entity-parse-clue)
+                    (progn (setf is-array t)
+                           (car entity-parse-clue))
+                    entity-parse-clue)))
+    (if is-array
+        ;; Parse a whole list
+        (loop for e-data in data collect (single-entity-from-json entity e-data))
+        ;; Just a single instance, parse the instance
+        (single-entity-from-json entity data))))
 
 (defun entity-to-json (e)
   "Given an entity instance, return a list which can be serialised to the appropriate JSON"
