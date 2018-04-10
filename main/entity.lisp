@@ -4,7 +4,7 @@
 
 ;; Basically a passthrough to the corm function, but adds the entity meta-data
 ;; to the *entity-list*
-(defmacro defentity (name slots &optional parents override)
+(defmacro defentity (name slots &key parents override)
   "Define an entity with the given name. This macro creates a class with the
   entity of that name, and creates the appropriate corresponding persistence
   storage. You can create a new entity with the make-<name> function.
@@ -49,7 +49,7 @@
   An optional 'override' argument can be set to T to drop the SQL table before
   re-creating it."
   (push name *entity-list*)
-  `(corm:defentity ,name ,slots ,parents ,override))
+  `(corm:defentity ,name ,slots :parents ,parents :override ,override))
 
 (defun entity-from-json (entity data)
   "Given an entity name and some parsed json data (i.e. json data in lisp form)

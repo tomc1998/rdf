@@ -1,7 +1,7 @@
 (in-package :rdf-full-example)
 
 (defun define-entities ()
-(rdf:defentity user-auth ((user "VARCHAR(256)" :not-null) (pass "VARCHAR(256)" :not-null)) () t))
+(rdf:defentity user-auth ((user "VARCHAR(256)" :not-null) (pass "VARCHAR(256)" :not-null)) :override t))
 
 (defun register-style ())
 

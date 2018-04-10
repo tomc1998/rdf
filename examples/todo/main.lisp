@@ -2,7 +2,7 @@
 
 (defun model ()
   (rdf:defentity user-auth ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)))
-  (rdf:defentity todo ((body "VARCHAR(2048)") (done "TINYINT(1)" :default "0")) (user-auth)))
+  (rdf:defentity todo ((body "VARCHAR(2048)") (done "TINYINT(1)" :default "0")) :parents (user-auth)))
 
 (defun reg-page ()
   (bs:gen-form 'reg-form '(("email" "Email" "Enter your email here")
@@ -154,8 +154,8 @@
        ((:add-todo-form onsubmit {@add-todo}))))
      ((div class "row justify-content-center")
       ((div class "col-sm-12 col-md-8 col-lg-6")
-       (!loop for t in {!store.todos}
-              ((:todo key {t.id} todo {t})))))
+       (!loop for todo in {!store.todos}
+              ((:todo key {todo.id} todo {todo})))))
      )))
 
 (defun client ()
@@ -181,8 +181,7 @@
                          ))
   ;; Set error behaviour
   (rdf:set-client-default-unauthorized-behaviour '(progn (setf {!store.session} (create))
-                                                   (chain m route (set "/login"))))
-  )
+                                                   (chain m route (set "/login")))))
 
 (defun server ()
   (setf rdf:*verify-auth* (lambda (type) (declare (ignore type)) (rdf:session-value 'user-id)))
