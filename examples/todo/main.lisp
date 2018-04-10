@@ -152,7 +152,12 @@
        ((:add-todo-form onsubmit {@add-todo}))))
      ((div class "row justify-content-center")
       ((div class "col-sm-12 col-md-8 col-lg-6")
-       (!loop for todo in {!store.todos}
+       (!loop for todo in {!store.todos-not-done}
+              ((:todo key {todo.id} todo {todo})))))
+     (hr)
+     ((div class "row justify-content-center")
+      ((div class "col-sm-12 col-md-8 col-lg-6")
+       (!loop for todo in {!store.todos-done}
               ((:todo key {todo.id} todo {todo})))))
      )))
 
@@ -164,6 +169,10 @@
   ;; Setup all components & routes
   (rdf:add-initial-store-state 'session '(create))
   (rdf:add-initial-store-state 'todos '(array))
+  (rdf:add-store-computed 'todos-done '(loop for todo in {!store.todos}
+                                          if (@ todo done) collect todo))
+  (rdf:add-store-computed 'todos-not-done '(loop for todo in {!store.todos}
+                                          if (not (@ todo done)) collect todo))
   (nav-bar)
   (todo)
   (home-page)

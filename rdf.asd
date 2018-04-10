@@ -33,6 +33,7 @@
            :set-view-routes
            :add-initial-store-state
            :add-store-action
+           :add-store-computed
            :dispatch-action
            :entity-to-json
            :entity-from-json
@@ -79,13 +80,22 @@
   :components ((:file "main/json-ser")
                (:file "main/json-deser")
                (:file "main/entity")
-               (:file "main/view/view" :depends-on ("main/view/control-cons"))
+               (:file "main/view/view"
+                      :depends-on ("main/view/control-cons"
+                                   "main/view/lib"
+                                   "main/view/store" "main/view/template"
+                                   "main/view/component"))
                (:file "main/view/lib")
+               (:file "main/view/store")
+               (:file "main/view/template")
+               (:file "main/view/component" :depends-on ("main/view/template"))
                (:file "main/view/control-cons")
                (:file "main/main"
-                      :depends-on ("main/json-ser" "main/json-deser"
-                                                   "main/view/view" "main/view/lib" "main/entity")
-                      )))
+                      :depends-on ("main/json-ser"
+                                   "main/json-deser"
+                                   "main/view/view"
+                                   "main/view/lib"
+                                   "main/entity"))))
 
 (asdf:defsystem rdf-tests
   :depends-on (:rdf :prove)
