@@ -66,10 +66,9 @@
    'set-done '(todo-id done)
    '(app-req "/set-done" (array (create id todo-id done done))
      (lambda (res)
-       (loop for i from 0 to (length {!store.todos}) do
-            (if (= (@ {!store.todos} (progn i) id) todo-id)
-                (setf (@ {!store.todos} (progn i) done) done)
-                break))
+       (loop for todo in {!store.todos} do
+            (if (= (@ todo id) todo-id)
+                (progn (setf (@ todo done) done) break)))
        )))
   (rdf:add-store-action
    'delete-todo '(todo-id)
@@ -77,8 +76,7 @@
      (lambda (res)
        (loop for i from 0 to (length {!store.todos}) do
             (if (= (@ {!store.todos} (progn i) id) todo-id)
-                (progn (chain {!store.todos} (splice i 1))
-                       break))))))
+                (progn (chain {!store.todos} (splice i 1)) break))))))
 
   (rdf:register-lass
    'todo
