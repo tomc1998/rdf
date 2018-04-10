@@ -64,7 +64,21 @@
 (defun todo ()
   (rdf:add-store-action
    'set-done '(todo-id done)
-   '(app-req "/set-done" (array (create id todo-id done done)) (lambda (res))))
+   '(app-req "/set-done" (array (create id todo-id done done))
+     (lambda (res)
+       (loop for i from 0 to (length {!store.todos}) do
+            (if (= (@ {!store.todos} (progn i) id) todo-id)
+                (setf (@ {!store.todos} (progn i) done) done)
+                break))
+       )))
+  (rdf:add-store-action
+   'delete-todo '(todo-id)
+   '(app-req "/delete-todo" (array (create id todo-id))
+     (lambda (res)
+       (loop for i from 0 to (length {!store.todos}) do
+            (if (= (@ {!store.todos} (progn i) id) todo-id)
+                (progn (chain {!store.todos} (splice i 1))
+                       break))))))
 
   (rdf:register-lass
    'todo
@@ -88,13 +102,10 @@
   (rdf:register-component
    'todo
    '(:attrs (todo)
-     :methods ((on-done ()
-                (rdf:dispatch-action
-                 set-done
-                 (array {todo.id} (not {todo.done}))
-                 (lambda () (setf {todo.done} (not {todo.done})))))))
-   '((div key {todo.id}
-      class (!class "border rounded my-1 my-md-2 my-lg-3"
+     :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
+               (on-delete () (rdf:dispatch-action delete-todo (array {todo.id})))
+               ))
+   '((div class (!class "border rounded my-1 my-md-2 my-lg-3"
              (!if {todo.done} "todo-checked")))
      ;; Todo body
      ((div class "d-flex align-items-center p-3 todo-body"
@@ -108,7 +119,7 @@
      (!if (not {todo.done})
       ((div class "d-flex align-items-center justify-content-around todo-controls")
        ((button class "btn btn-link btn-sm") "View details")
-       ((button class "btn btn-link btn-sm") "Delete")
+       ((button class "btn btn-link btn-sm" onclick {@on-delete}) "Delete")
        ((button class "btn btn-link btn-sm") "Edit")
        ))
      )
@@ -144,7 +155,7 @@
      ((div class "row justify-content-center")
       ((div class "col-sm-12 col-md-8 col-lg-6")
        (!loop for t in {!store.todos}
-              ((:todo todo {t})))))
+              ((:todo key {t.id} todo {t})))))
      )))
 
 (defun client ()
@@ -203,7 +214,8 @@
         (rdf:log-message* :INFO "~s" (class-of 3))
         (mapcar #'car tree)))
     :require-auth t)
-  (rdf:define-app-req "/set-done" (todo) (lambda (todo) (rdf:update todo 'done) ()))
+  (rdf:define-app-req "/set-done" (todo) (lambda (todo) (rdf:update-entity todo 'done) ()))
+  (rdf:define-app-req "/delete-todo" (todo) (lambda (todo) (rdf:delete-entity todo) ()))
   )
 
 (defun main ()
