@@ -1,6 +1,7 @@
 (in-package :rdf)
 
-(prove:plan 1)
+;; !loop control cons tests
+(prove:plan 2)
 (prove:is (expand-loop-control '(!loop for x in {asd} (div {asd})))
           '((!
              (let ((elements (array)))
@@ -21,6 +22,14 @@
           "!loop cc should work with multiple body elements")
 (prove:finalize)
 
+(prove:plan 1)
+(prove:is (expand-model-control '(!model {asd}))
+          '(onchange (! (chain m (with-attr "value" (lambda (v) (setf {asd} v)))))
+            value {asd})
+          "expand-model-control works")
+(prove:finalize)
+
+;; is-control-cons tests
 (prove:plan 10)
 (prove:is (is-control-cons '(!if {asd} "Hello")) t
           "is-control-cons correctly identifies a cc")
@@ -44,6 +53,7 @@
           "is-control-cons returns nil when given something that's not a list")
 (prove:finalize)
 
+;; expand-all-control-structures tests
 (prove:plan 3)
 (prove:is (expand-all-control-structures '(!if {asd} "Hello 1" "Hello 2"))
           '(! (if {asd} "Hello 1" "Hello 2"))
