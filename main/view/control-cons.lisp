@@ -72,21 +72,42 @@
   (if (not (typep c 'cons)) (return-from try-expand-control-cons nil))
   (if (not (typep (car c) 'symbol)) (return-from try-expand-control-cons nil))
   (if (not (char= #\! (char (string (car c)) 0))) (return-from try-expand-control-cons nil))
-  (cond
-    ((string= (string-downcase (car c)) "!loop") (expand-loop-control c))
-    ((string= (string-downcase (car c)) "!model") (expand-model-control c))
-    ((string= (string-downcase (car c)) "!if") (expand-if-control c))
-    ((string= (string-downcase (car c)) "!class") (expand-class-control c))
-    (t nil)))
+  (let ((string-c (string-downcase (car c))))
+    (cond
+      ((string= string-c "!loop") (expand-loop-control c))
+      ((string= string-c "!model") (expand-model-control c))
+      ((string= string-c "!if") (expand-if-control c))
+      ((string= string-c "!class") (expand-class-control c))
+      (t nil))))
+
+(defun is-control-cons (c)
+  "Assuming c is a cons, check if it's a control cons (i.e. if the car is a
+symbol beginning with !)."
+  (if (not (listp c)) (return-from is-control-cons nil))
+  (if (not (symbolp (car c))) (return-from is-control-cons nil))
+  (let ((string-c (string-downcase (car c))))
+    (cond
+      ((string= string-c "!loop") t)
+      ((string= string-c "!model") t)
+      ((string= string-c "!if") t)
+      ((string= string-c "!class") t)
+      (t nil))))
 
 (defun expand-all-control-structures (template)
   "Returns the template with all control structures (i.e. !loop) expanded."
   (cond
     ((listp template)
-     (loop for i from 0 for item in template append
-          (let ((expanded (try-expand-control-cons item)))
-            (if expanded expanded
-                ;; If we failed to expand, just treat this as a normal list
-                (list (expand-all-control-structures item))))))
+     (let ((expanded (try-expand-control-cons template)))
+       (if expanded (car expanded)
+           ;; Some list bullshittery with append here. This is because we
+           ;; need to allow for control cons expanding into multiple items
+           ;; which should be interpolated into the list, rather than
+           ;; inserted as a sublist. This gives us a huge amount of power
+           ;; with possible control cons (see !model)
+           (loop for item in template append
+                (if (is-control-cons item)
+                    (try-expand-control-cons item)
+                    (list (expand-all-control-structures item)))))
+       ))
     (t template)))
 

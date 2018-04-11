@@ -106,7 +106,9 @@
   :components ((:test-file "test/main")
                (:test-file "test/json")
                (:test-file "test/entity")
-               (:test-file "test/view/view")))
+               (:test-file "test/view/view")
+               (:test-file "test/view/control-cons")
+               (:test-file "test/view/component")))
 
 (asdf:defsystem rdf-full-example
   :author "Tom <thomascheng1998@gmail.com>"
