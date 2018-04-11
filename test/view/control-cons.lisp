@@ -1,5 +1,26 @@
 (in-package :rdf)
 
+(prove:plan 1)
+(prove:is (expand-loop-control '(!loop for x in {asd} (div {asd})))
+          '((!
+             (let ((elements (array)))
+               (loop for item in {asd} do
+                    (progn
+                      (chain elements
+                             (push (m "DIV" (create) (array {asd}))))))
+               elements)))
+          "!loop cc should work")
+(prove:is (expand-loop-control '(!loop for x in {asd} (div {asd}) (div "Hello")))
+          '((!
+             (let ((elements (array)))
+               (loop for item in {asd} do
+                    (progn (chain elements (push (m "DIV" (create) (array {asd}))))
+                           (chain elements (push (m "DIV" (create) (array "Hello"))))))
+               elements)
+             ))
+          "!loop cc should work with multiple body elements")
+(prove:finalize)
+
 (prove:plan 10)
 (prove:is (is-control-cons '(!if {asd} "Hello")) t
           "is-control-cons correctly identifies a cc")

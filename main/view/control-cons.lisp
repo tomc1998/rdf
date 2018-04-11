@@ -15,11 +15,16 @@
         ;; Get the 'rest' of the list
          (body (nthcdr 5 c))
          (symbol-table `(,(intern (format nil "{~a}" binding) :keyword) (! item))))
-    `((! ,(loop for b in body append
-               (let ((expanded (expand-with-symbol-table b symbol-table)))
-                 `(loop for item in ,target collect
-                       ,(render (expand-all-control-structures expanded)))
-                 ))))))
+    `((!
+       (let ((elements (array)))
+         (loop for item in ,target do
+              ,(cons 'progn
+                     (loop for b in body collect
+                          `(chain elements
+                                  (push
+                                   ,(render (expand-all-control-structures
+                                             (expand-with-symbol-table b symbol-table))))))))
+         elements)))))
 
 (defun expand-model-control (c)
   (if (> (length c) 2) (error 'control-cons-parse-error :text
@@ -43,15 +48,15 @@
 
 (defun expand-class-control (c)
   (let* ((try-expand-conditional-class
-         (lambda (c)
-           (if (listp c)
-               (progn
-                 (if (not (string= (string-downcase (car c)) "!if"))
-                     (error 'control-cons-parse-error
-                            :text
-                            (format nil "Unsupported cons inside !class: ~s
+          (lambda (c)
+            (if (listp c)
+                (progn
+                  (if (not (string= (string-downcase (car c)) "!if"))
+                      (error 'control-cons-parse-error
+                             :text
+                             (format nil "Unsupported cons inside !class: ~s
                         - should start with !if" c)))
-                 (car (expand-if-control c))) c)))
+                  (car (expand-if-control c))) c)))
          (bindings (cons 'array (mapcar try-expand-conditional-class (cdr c)))))
     `((! (reduce (lambda (s0 s1)
                    (concatenate 'string s0 " " s1)
