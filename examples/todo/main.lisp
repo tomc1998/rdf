@@ -105,11 +105,11 @@
 
   (rdf:register-component
    'todo
-   '(:attrs (todo) :state (editing)
+   '(:attrs (todo) :state (editing nil prev-body-value "")
      :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
                (on-delete () (rdf:dispatch-action delete-todo (array {todo.id})))
-               (on-edit () (setf {editing} T))
-               (on-stop-edit () (setf {editing} NIL))
+               (on-edit () (progn (setf {prev-body-value} {todo.body}) (setf {editing} T)))
+               (on-stop-edit () (progn (setf {todo.body} {prev-body-value}) (setf {editing} NIL)))
                (on-edit-submit () (progn (setf {editing} NIL)
                                          (rdf:dispatch-action edit-todo (array {todo.id} {todo.body}))))
                ))
