@@ -2,7 +2,9 @@
 
 (defun model ()
   (rdf:defentity user-auth ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)))
-  (rdf:defentity todo ((body "VARCHAR(2048)") (done "TINYINT(1)" :default "0")) :parents (user-auth)))
+  (rdf:defentity todo ((body "VARCHAR(2048)") (done "TINYINT(1)" :default "0")) :parents (user-auth))
+  (rdf:defentity comment ((body "VARCHAR(2048)")) :parents (todo user-auth) :override t)
+  )
 
 (defun reg-page ()
   (bs:gen-form 'reg-form '(("email" "Email" "Enter your email here")
@@ -109,6 +111,7 @@
      :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
                (on-delete () (rdf:dispatch-action delete-todo (array {todo.id})))
                (on-edit () (progn (setf {prev-body-value} {todo.body}) (setf {editing} T)))
+               (on-view () (progn (setf {!store.showing-todo-modal} {todo})))
                (on-stop-edit () (progn (setf {todo.body} {prev-body-value}) (setf {editing} NIL)))
                (on-edit-submit () (progn (setf {editing} NIL)
                                          (rdf:dispatch-action edit-todo (array {todo.id} {todo.body}))))
@@ -138,12 +141,59 @@
       (div
        ((hr class "my-0"))
        ((div class "d-flex align-items-center justify-content-around todo-controls")
-        ((button class "btn btn-link btn-sm") "View details")
+        ((button class "btn btn-link btn-sm" onclick {@on-view}) "View details")
         ((button class "btn btn-link btn-sm" onclick {@on-delete}) "Delete")
         ((button class "btn btn-link btn-sm" onclick {@on-edit}) "Edit")
         )))
      )
    ))
+
+(defun todo-comment ()
+  (rdf:register-component
+   'todo-comment '(:attrs (comment))
+   '(.media
+     (.media-body {comment.body}))
+   )
+  )
+
+(defun view-todo-modal ()
+  (rdf:add-store-action
+   'add-comment '(todo-id comment)
+   '(app-req "/add-comment" (create body (@ comment body) parent-todo-id todo-id)
+     (lambda (res) (rdf:dispatch-action 'fetch-comments (array todo-id)))))
+  (rdf:register-component
+   'view-todo-modal
+   '(:state (comment (create body ""))
+     :methods ((add-comment ()
+                (rdf:dispatch-action
+                 add-comment (array {!store.showing-todo-modal.id} {comment})))
+               (on-close () (setf {!store.showing-todo-modal} null)))
+     :lifecycle ((onupdate (if {!store.showing-todo-modal}
+                               (chain ($ "#todo-modal") (modal "show"))
+                               (chain ($ "#todo-modal") (modal "hide"))))))
+   `((div class "modal fade" role "dialog" id "todo-modal")
+     ((div class "modal-dialog" role "document")
+      (!if {!store.showing-todo-modal}
+           ((div class "modal-content")
+            ((div class "modal-header")
+             ((div class "modal-title") {!store.showing-todo-modal.body})
+             ((button type "button" class "close" onclick {@on-close})
+              ,(code-char #x00d7))
+             )
+            ((div class "modal-body")
+             (.container
+              (.row
+               ((form.col onsubmit {@add-comment})
+                         ((input type "text" style (create width "100%")
+                                 (!model {comment.body}) placeholder "Add a comment..."))))
+              (.row.justify-content-center
+               (!if
+                (= 0 (length {!store.showing-todo-modal-comments}))
+                (.p-2 "No comments here yet.")
+                (div (!loop for comment in {!store.showing-todo-modal-comments}
+                            ((:todo-comment comment {comment}))))))
+              )
+             )))))))
 
 (defun home-page ()
   (rdf:add-store-action
@@ -170,25 +220,27 @@
                (add-todo (todo)
                 (app-req "/add-todo" (array todo)
                          (lambda (res) (rdf:dispatch-action fetch-todos))))))
-   '((div class "container-fluid px-0")
-     :nav-bar
-     ((div class "row mt-3 justify-content-center")
-      ((div class "col-lg-6 col-md-8 col-sm-12")
-       ((:add-todo-form onsubmit {@add-todo}))))
-     ((div class "row justify-content-center")
-      ((div class "col-sm-12 col-md-8 col-lg-6")
-       (!loop for todo in {!store.todos-not-done}
-              ((:todo key {todo.id} todo {todo})))))
-     (!if (> (length {!store.todos-done}) 0)
-      (div
-       (hr)
-       ((div class "row justify-content-center")
-        ((button class "btn btn-white" onclick {@delete-all-done}) "Delete all completed tasks"))
-       ((div class "row justify-content-center")
-        ((div class "col-sm-12 col-md-8 col-lg-6")
-         (!loop for todo in {!store.todos-done}
-                ((:todo key {todo.id} todo {todo})))))))
-     )))
+   '(div
+     ((div class "container-fluid px-0")
+      :nav-bar
+      :view-todo-modal
+      ((div class "row mt-3 justify-content-center")
+       ((div class "col-lg-6 col-md-8 col-sm-12")
+        ((:add-todo-form onsubmit {@add-todo}))))
+      ((div class "row justify-content-center")
+       ((div class "col-sm-12 col-md-8 col-lg-6")
+        (!loop for todo in {!store.todos-not-done}
+               ((:todo key {todo.id} todo {todo})))))
+      (!if (> (length {!store.todos-done}) 0)
+       (div
+        (hr)
+        ((div class "row justify-content-center")
+         ((button class "btn btn-white" onclick {@delete-all-done}) "Delete all completed tasks"))
+        ((div class "row justify-content-center")
+         ((div class "col-sm-12 col-md-8 col-lg-6")
+          (!loop for todo in {!store.todos-done}
+                 ((:todo key {todo.id} todo {todo})))))))
+      ))))
 
 (defun client ()
   (rdf:clear-additional-scripts)
@@ -198,12 +250,16 @@
   ;; Setup all components & routes
   (rdf:add-initial-store-state 'session '(create))
   (rdf:add-initial-store-state 'todos '(array))
+  (rdf:add-initial-store-state 'showing-todo-modal 'null)
+  (rdf:add-initial-store-state 'showing-todo-modal-comments '(array))
   (rdf:add-store-computed 'todos-done '(loop for todo in {!store.todos}
                                           if (@ todo done) collect todo))
   (rdf:add-store-computed 'todos-not-done '(loop for todo in {!store.todos}
                                               if (not (@ todo done)) collect todo))
   (nav-bar)
   (todo)
+  (todo-comment)
+  (view-todo-modal)
   (home-page)
   (splash-page)
   (reg-page)
@@ -262,6 +318,15 @@
   (rdf:define-app-req "/edit-todo" (todo)
     (lambda (todo) (if (rdf:check-owner-eq todo 'parent-user-auth-id (rdf:session-value 'user-id))
                        (rdf:update-entity todo 'body)) ()) :require-auth t)
+  (rdf:define-app-req "/add-comment" (comment)
+    (lambda (comment) (if (rdf:check-owner-eq
+                           (make-instance 'todo :id (slot-value comment 'parent-todo-id))
+                           'parent-user-auth-id (rdf:session-value 'user-id))
+                          ;; Set the author ID
+                          (progn (setf (slot-value comment 'parent-user-auth-id)
+                                       (rdf:session-value 'user-id))
+                                 ;; Insert the comment
+                                 (rdf:insert-one comment))) ()) :require-auth t)
   )
 
 (defun main ()
