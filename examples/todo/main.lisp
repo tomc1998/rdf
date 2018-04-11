@@ -3,7 +3,7 @@
 (defun model ()
   (rdf:defentity user-auth ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)))
   (rdf:defentity todo ((body "VARCHAR(2048)") (done "TINYINT(1)" :default "0")) :parents (user-auth))
-  (rdf:defentity comment ((body "VARCHAR(2048)")) :parents (todo user-auth) :override t)
+  (rdf:defentity comment ((body "VARCHAR(2048)")) :parents (todo user-auth))
   )
 
 (defun reg-page ()
@@ -151,26 +151,40 @@
 (defun todo-comment ()
   (rdf:register-component
    'todo-comment '(:attrs (comment))
-   '(.media
+   '((.media.border.rounded.my-1.p-2 style (create width "100%"))
      (.media-body {comment.body}))
    )
   )
 
 (defun view-todo-modal ()
   (rdf:add-store-action
+   'fetch-comments '(todo-id)
+   '(app-req "/get-comments" todo-id
+     (lambda (res) (loop for c in res do (setf (@ {!store.comments} (@ c id)) c)))))
+  (rdf:add-store-action
    'add-comment '(todo-id comment)
    '(app-req "/add-comment" (create body (@ comment body) parent-todo-id todo-id)
-     (lambda (res) (rdf:dispatch-action 'fetch-comments (array todo-id)))))
+     (lambda (res) (rdf:dispatch-action fetch-comments (array todo-id)))))
   (rdf:register-component
    'view-todo-modal
-   '(:state (comment (create body ""))
+   '(:state (comment (create body "") already-showing nil)
      :methods ((add-comment ()
-                (rdf:dispatch-action
-                 add-comment (array {!store.showing-todo-modal.id} {comment})))
+                (progn
+                  (rdf:dispatch-action
+                   add-comment (array {!store.showing-todo-modal.id} {comment}))
+                  (setf {comment.body} "")))
                (on-close () (setf {!store.showing-todo-modal} null)))
-     :lifecycle ((onupdate (if {!store.showing-todo-modal}
-                               (chain ($ "#todo-modal") (modal "show"))
-                               (chain ($ "#todo-modal") (modal "hide"))))))
+     :lifecycle
+     ((onupdate
+       (if {!store.showing-todo-modal}
+           (progn
+             (chain ($ "#todo-modal") (modal "show"))
+             (if (not {already-showing})
+                 (rdf:dispatch-action fetch-comments (array {!store.showing-todo-modal.id})))
+             (setf {already-showing} t))
+           (progn
+             (chain ($ "#todo-modal") (modal "hide"))
+             (setf {already-showing} nil))))))
    `((div class "modal fade" role "dialog" id "todo-modal")
      ((div class "modal-dialog" role "document")
       (!if {!store.showing-todo-modal}
@@ -184,14 +198,14 @@
              (.container
               (.row
                ((form.col onsubmit {@add-comment})
-                         ((input type "text" style (create width "100%")
-                                 (!model {comment.body}) placeholder "Add a comment..."))))
-              (.row.justify-content-center
-               (!if
-                (= 0 (length {!store.showing-todo-modal-comments}))
-                (.p-2 "No comments here yet.")
-                (div (!loop for comment in {!store.showing-todo-modal-comments}
-                            ((:todo-comment comment {comment}))))))
+                ((input type "text" style (create width "100%")
+                        (!model {comment.body}) placeholder "Add a comment..."))))
+              (!if (= 0 (length {!store.showing-todo-modal-comments}))
+               (.row.justify-content-center
+                (.p-2 "No comments here yet."))
+               (.row.justify-content-stretch
+                (!loop for comment in {!store.showing-todo-modal-comments}
+                       ((:todo-comment comment {comment})))))
               )
              )))))))
 
@@ -250,8 +264,17 @@
   ;; Setup all components & routes
   (rdf:add-initial-store-state 'session '(create))
   (rdf:add-initial-store-state 'todos '(array))
+  (rdf:add-initial-store-state 'comments '(create))
   (rdf:add-initial-store-state 'showing-todo-modal 'null)
-  (rdf:add-initial-store-state 'showing-todo-modal-comments '(array))
+  (rdf:add-store-computed 'showing-todo-modal-comments
+                          ;; Loop through all the comments, find the ones which
+                          ;; match the current todo
+                          '(let ((comments (array)))
+                            (for-in (comment-id {!store.comments})
+                             (let ((comment (@ {!store.comments} (progn comment-id))))
+                               (if (= (@ comment parent-todo-id) {!store.showing-todo-modal.id})
+                                   (chain comments (push comment)))))
+                            comments))
   (rdf:add-store-computed 'todos-done '(loop for todo in {!store.todos}
                                           if (@ todo done) collect todo))
   (rdf:add-store-computed 'todos-not-done '(loop for todo in {!store.todos}
@@ -302,7 +325,6 @@
       (let ((tree (rdf:select-tree
                    '(todo) :where `(= ,(rdf:session-value 'user-id)
                                       (todo parent-user-auth-id)))))
-        (rdf:log-message* :INFO "~s" (class-of 3))
         (mapcar #'car tree)))
     :require-auth t)
   (rdf:define-app-req "/set-done" (todo)
@@ -327,6 +349,11 @@
                                        (rdf:session-value 'user-id))
                                  ;; Insert the comment
                                  (rdf:insert-one comment))) ()) :require-auth t)
+  (rdf:define-app-req "/get-comments" (nil)
+    (lambda (todo-id)
+      (let ((tree (rdf:select-tree '(comment) :where
+                                   `(= ,todo-id (comment parent-todo-id)))))
+        (mapcar #'car tree))) :require-auth t)
   )
 
 (defun main ()
