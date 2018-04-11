@@ -14,13 +14,14 @@
   (rdf:register-component
    'reg ()
    '((div class "container")
-     ((div class "row justify-content-center my-5") ((h1 style "text-align: center") (strong "Create your account")))
+     ((div class "row justify-content-center my-5") ((h1 style "text-align: center")
+                                                     (strong "Create your account")))
      ((div class "row justify-content-center mt-5")
       ((div class "col-sm-12 col-lg-8") :reg-form)))))
 
 (defun login-page ()
-  (bs:gen-form 'login-form '(("email" "Email" "Enter the email you used to sign up")
-                             ("pass" "Password" "Enter your password"))
+  (bs:gen-form 'login-form '(("email" "Email" "Enter the email you used to create your account")
+                             ("pass" "Password" "Enter your password here" :type "password"))
                '(app-req "/login" (array obj)
                  (lambda (id) (setf {!store.session} (create user-id id))
                          (chain m route (set "/")))))
