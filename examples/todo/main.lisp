@@ -77,6 +77,13 @@
        (loop for i from 0 to (length {!store.todos}) do
             (if (= (@ {!store.todos} (progn i) id) todo-id)
                 (progn (chain {!store.todos} (splice i 1)) break))))))
+  (rdf:add-store-action
+   'edit-todo '(todo-id body)
+   '(app-req "/edit-todo" (array (create id todo-id body body))
+     (lambda (res)
+       (loop for todo in {!store.todos} do
+            (if (= (@ todo id) todo-id)
+                (progn (setf (@ todo body) body) break))))))
 
   (rdf:register-lass
    'todo
@@ -98,27 +105,43 @@
 
   (rdf:register-component
    'todo
-   '(:attrs (todo)
+   '(:attrs (todo) :state (editing)
      :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
                (on-delete () (rdf:dispatch-action delete-todo (array {todo.id})))
+               (on-edit () (setf {editing} T))
+               (on-stop-edit () (setf {editing} NIL))
+               (on-edit-submit () (progn (setf {editing} NIL)
+                                         (rdf:dispatch-action edit-todo (array {todo.id} {todo.body}))))
                ))
-   '((div class (!class "border rounded my-1 my-md-2 my-lg-3"
-             (!if {todo.done} "todo-checked")))
+   `((div class (!class "border rounded my-1 my-md-2 my-lg-3"
+                 (!if {todo.done} "todo-checked")))
      ;; Todo body
-     ((div class "d-flex align-items-center p-3 todo-body"
-       style (create overflow-x "auto"))
-      ;; 'checked' box
-      ((div class "rounded p-2 todo-check"
-            onclick {@on-done}))
-      ((span class "col") {todo.body}))
-     ((hr class "my-0"))
+     (!if (not {editing})
+      ;; Todo view
+      ((div class "d-flex align-items-center p-3 todo-body"
+            style (create overflow-x "auto"))
+       ;; 'checked' box
+       ((div class "rounded p-2 todo-check"
+             onclick {@on-done}))
+       ((span class "col") {todo.body})
+       )
+      ;; Edit controls
+      ((div class "d-flex align-items-center p-3 todo-body"
+            style (create overflow-x "auto"))
+       ((button class "btn close" onclick {@on-stop-edit}) ,(code-char #x00d7))
+       ((form onsubmit {@on-edit-submit} class "m-0 col")
+        ((input (!model {todo.body}) type "text" style (create width "100%"))))
+       )
+      )
      ;; Todo controls
-     (!if (not {todo.done})
-      ((div class "d-flex align-items-center justify-content-around todo-controls")
-       ((button class "btn btn-link btn-sm") "View details")
-       ((button class "btn btn-link btn-sm" onclick {@on-delete}) "Delete")
-       ((button class "btn btn-link btn-sm") "Edit")
-       ))
+     (!if (not (or {editing} {todo.done}))
+      (div
+       ((hr class "my-0"))
+       ((div class "d-flex align-items-center justify-content-around todo-controls")
+        ((button class "btn btn-link btn-sm") "View details")
+        ((button class "btn btn-link btn-sm" onclick {@on-delete}) "Delete")
+        ((button class "btn btn-link btn-sm" onclick {@on-edit}) "Edit")
+        )))
      )
    ))
 
@@ -229,6 +252,7 @@
   (rdf:define-app-req "/set-done" (todo) (lambda (todo) (rdf:update-entity todo 'done) ()))
   (rdf:define-app-req "/delete-todo" (todo) (lambda (todo) (rdf:delete-entity todo) ()))
   (rdf:define-app-req "/delete-all-todos" ((todo)) (lambda (todos) (rdf:delete-all todos) ()))
+  (rdf:define-app-req "/edit-todo" (todo) (lambda (todo) (rdf:update-entity todo 'body) ()))
   )
 
 (defun main ()

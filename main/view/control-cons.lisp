@@ -37,7 +37,8 @@
   (let ((condition (second c))
         (if-value (third c)))
     (if (= (length c) 4)
-        `((! (if ,condition ,(render (expand-all-control-structures if-value)) ,(render (fourth c)))))
+        `((! (if ,condition ,(render (expand-all-control-structures if-value))
+                 ,(render (expand-all-control-structures (fourth c))))))
         `((! (if ,condition ,(render (expand-all-control-structures if-value))))))))
 
 (defun expand-class-control (c)
