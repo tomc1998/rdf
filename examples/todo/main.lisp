@@ -22,7 +22,7 @@
   (bs:gen-form 'login-form '(("email" "Email" "Enter the email you used to sign up")
                              ("pass" "Password" "Enter your password"))
                '(app-req "/login" (array obj)
-                 (lambda (id) (setf {!store.session.user-id} id)
+                 (lambda (id) (setf {!store.session} (create user-id id))
                          (chain m route (set "/")))))
   (rdf:register-component
    'login ()
@@ -58,10 +58,18 @@
 
 (defun nav-bar ()
   (rdf:register-component
-   'nav-bar ()
+   'nav-bar
+   '(:methods
+     ((logout () (app-req "/logout" ()
+                          (lambda (res) (setf {!store.session} null)
+                                  (chain m route (set "/get-started")))))))
    '((div class "row" style (create height "56px"))
      ((nav class "navbar fixed-top navbar-dark bg-dark ")
-                        ((a class "navbar-brand" href "#!/") "TODO")))))
+      ((a class "navbar-brand" href "#!/") "TODO")
+      ((button.btn.btn-link.right
+        onclick {@logout}
+        style (create color "#AAA")) "Logout")
+      ))))
 
 (defun todo ()
   (rdf:add-store-action
@@ -262,7 +270,7 @@
   ;; Load Bootstrap
   (bs:load-all)
   ;; Setup all components & routes
-  (rdf:add-initial-store-state 'session '(create))
+  (rdf:add-initial-store-state 'session 'null)
   (rdf:add-initial-store-state 'todos '(array))
   (rdf:add-initial-store-state 'comments '(create))
   (rdf:add-initial-store-state 'showing-todo-modal 'null)
@@ -295,7 +303,7 @@
                          ("/login" login)
                          ))
   ;; Set error behaviour
-  (rdf:set-client-default-unauthorized-behaviour '(progn (setf {!store.session} (create))
+  (rdf:set-client-default-unauthorized-behaviour '(progn (setf {!store.session} null)
                                                    (chain m route (set "/login")))))
 
 (defun server ()
@@ -315,6 +323,9 @@
               (rdf:raise-app-error "Incorrect email or password" 400)))
         (setf (rdf:session-value 'user-id) (slot-value (caar users) 'rdf:id))
         (slot-value (caar users) 'rdf:id))))
+  (rdf:define-app-req "/logout" ()
+    (lambda () (setf (rdf:session-value 'user-id) nil)) :require-auth t)
+
   (rdf:define-app-req "/add-todo" (todo)
     (lambda (todo)
       (setf (slot-value todo 'parent-user-auth-id) (rdf:session-value 'user-id))
