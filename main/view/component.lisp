@@ -128,6 +128,57 @@
     ;; Expand with our symbol table
     (expand-with-symbol-table template symbol-table)))
 
+(defun error-check-fields (fields)
+  "Checks for common errors in defcomp fields"
+  (loop for (k v) on fields by #'cddr do
+       (if (not (find k '(:lifecycle :attrs :state :computed :methods)))
+           (error "Unknown field key in component: ~s" k))
+       (if (not (consp v))
+           (error "~s field in component is not a cons: ~s" k v))
+       (loop for item in v do
+            (if (not (consp item))
+                (error "In component field ~s item ~s is not a cons (all fields
+                should be alists)"
+                       v item))
+            (cond
+              ((eq k :state)
+               (if (/= (length item) 2)
+                   (error "State fields expected to have 2 items - a name, and
+                   an initial value. Yours has ~a - ~s"
+                          (length item) item)))
+              ((eq k :attrs)
+               (if (not (or (= (length item) 1) (= (length item) 2)))
+                   (error "Attrs fields expected to have 1 or 2 items - a name, and
+                   an initial value. Yours has ~a - ~s"
+                          (length item) item)))
+              ((eq k :computed)
+               (if (/= (length item) 2)
+                   (error "Computed fields expected to have 2 items - a name, and
+                   a parenscript expression. Yours has ~a - ~s"
+                          (length item) item)))
+              ((eq k :methods)
+               (if (/= (length item) 3)
+                   (error "Method fields shold have 3 fields - name, params, and
+                   body expr. Yours has ~a - ~s"
+                          (length item) item)))
+              ((eq k :lifecycle)
+               (if (/= (length item) 2)
+                   (error "Lifecycle methods should have 2 fields - a name, and
+                   body expr. Yous has ~a - ~s"
+                          (length item) item))
+               (if (not (find (car item)
+                              '(oninit onupdate onbeforeupdate onremove
+                              onbeforeremove oncreate)))
+                   (error "Unrecognized lifecycle method: ~s. Possible values:
+                   - oninit
+                   - onupdate
+                   - onbeforeupdate
+                   - onremove
+                   - onbeforeremove
+                   - oncreate" (car item)))
+               )
+              ))))
+
 (defun defcomp (fields template)
   "
   This should in general not be used by app devs - use the register-component
@@ -264,6 +315,8 @@
     component 'myComp'. Remember this performs kebab to camel case conversions,
     so you would actually define a component named 'my-comp' with an attribute
     named 'my-attr'."
+  ;; This errors if there are abnormalities in the fields
+  (error-check-fields fields)
   ;; Extract data from the fields list
   (let* ((state (getf fields :state))
          (computed (getf fields :computed))
