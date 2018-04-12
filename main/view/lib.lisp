@@ -12,10 +12,12 @@ to another page, and navigate to a login page."
          (expand-with-symbol-table expr '(:{!store} (! (@ window store)))))))
 
 (defpsmacro dispatch-action (action-name &optional params callback error-callback)
-  `(let ((res (chain window store-actions ,action-name (apply null ,params))))
-     ,(if callback `(chain res (then ,callback)))
-     ,(if error-callback `(chain res (then ,error-callback)))
-     ))
+  (let ((params-parsed (if (and (listp params) (eq 'array (car params)))
+                           params `(array ,params))))
+   `(let ((res (chain window store-actions ,action-name (apply null ,params-parsed))))
+      ,(if callback `(chain res (then ,callback)))
+      ,(if error-callback `(chain res (then ,error-callback)))
+      )))
 
 (defun render-lib-js ()
   "Returns a js library with convenience functions"

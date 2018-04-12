@@ -118,7 +118,7 @@
    'todo
    '(:attrs ((todo)) :state ((editing nil) (prev-body-value ""))
      :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
-               (on-delete () (rdf:dispatch-action delete-todo (array {todo.id})))
+               (on-delete () (rdf:dispatch-action delete-todo {todo.id}))
                (on-edit () (progn (setf {prev-body-value} {todo.body}) (setf {editing} T)))
                (on-view () (progn (setf {!store.showing-todo-modal} {todo})))
                (on-stop-edit () (progn (setf {todo.body} {prev-body-value}) (setf {editing} NIL)))
