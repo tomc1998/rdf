@@ -140,8 +140,8 @@
   ## Example
   (defcomp (
     :lifecycle ((oninit (chain console (log \"Hello, this is the component init\"))))
-    :attrs (first-name last-name)
-    :state (count 0)
+    :attrs ((first-name nil) (last-name nil))
+    :state ((count 0))
     :computed (
       (double-count (* 2 {count}))
       (full-name (concatenate 'string {first-name} {last-name}))
@@ -161,11 +161,11 @@
       \" full name: \" {full-name}
       (\"br\")
       ((button onclick {@inc}) \"Increment\")))
-  This defines a component with 2 attributes, a state called 'count', and some
-  computed properties. The computed and attrs are used in the template with the { and }
-  chars. 'Dotted' notation can be used to access children in an object value.
-  For example: {foo.bar} will access the 'foo' field, and access the 'bar'
-  child of this.
+  This defines a component with 2 attributes (defaulting to nil),
+  a state called 'count', and some computed properties. The computed and attrs are
+  used in the template with the { and } chars. 'Dotted' notation can be used to
+  access children in an object value. For example: {foo.bar} will access the
+  'foo' field, and access the 'bar' child of this.
   Computed properties are any value parenscript expression. Fields can be
   interpolated into the expression with (), and multiple forms can be evaluated
   inside a progn. Fields can be modified with (setf {field-name} <val>). They
@@ -290,7 +290,10 @@
                          (cdr (assoc 'oninit lifecycle :test
                                      (lambda (s0 s1) (string= (string s0) (string s1)))))))
          ;; Build state declarations of attrs for parenscript (these will go in the oninit method)
-         (attr-state-decl (loop for (a nil) in attrs collect `(setf (@ vnode state ,a) (@ vnode attrs ,a))))
+         (attr-state-decl (loop for (a default) in attrs collect
+                               `(setf (@ vnode state ,a)
+                                      ;; If attr defined, use that - otherwise, use the default
+                                      (if (@ vnode attrs ,a) (@ vnode attrs ,a) ,default))))
 
          ;; Create computed & method property declarations
          (computed-decl
