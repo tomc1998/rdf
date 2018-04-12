@@ -34,6 +34,10 @@
       (! (chain m (with-attr "value" (lambda (v) (setf ,binding v)))))
       value ,binding)))
 
+(defun expand-array-control (c)
+  `((! (array ,@(loop for template in (cdr c) collect
+                     (render (expand-all-control-structures template)))))))
+
 (defun expand-if-control (c)
   (if (not (or (= (length c) 3) (= (length c) 4)))
       (error 'control-cons-parse-error
@@ -83,6 +87,7 @@
       ((string= string-c "!model") (expand-model-control c))
       ((string= string-c "!if") (expand-if-control c))
       ((string= string-c "!class") (expand-class-control c))
+      ((string= string-c "!array") (expand-array-control c))
       (t nil))))
 
 (defun is-control-cons (c)
@@ -96,6 +101,7 @@ symbol beginning with !)."
       ((string= string-c "!model") t)
       ((string= string-c "!if") t)
       ((string= string-c "!class") t)
+      ((string= string-c "!array") t)
       (t nil))))
 
 (defun expand-all-control-structures (template)

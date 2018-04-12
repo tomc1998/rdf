@@ -127,33 +127,31 @@
                ))
    `((div class (!class "border rounded my-1 my-md-2 my-lg-3"
                  (!if {todo.done} "todo-checked")))
-     ;; Todo body
-     (!if (not {editing})
-      ;; Todo view
-      ((div class "d-flex align-items-center p-3 todo-body"
-            style (create overflow-x "auto"))
+     ;; Todo view
+     ((div class "d-flex align-items-center p-3 todo-body"
+           style (create overflow-x "auto"))
+      ;; Todo body
+      (!if
+       (not {editing})
        ;; 'checked' box
-       ((div class "rounded p-2 todo-check"
-             onclick {@on-done}))
-       ((span class "col") {todo.body})
-       )
-      ;; Edit controls
-      ((div class "d-flex align-items-center p-3 todo-body"
-            style (create overflow-x "auto"))
-       ((button class "btn close" onclick {@on-stop-edit}) ,(code-char #x00d7))
-       ((form onsubmit {@on-edit-submit} class "m-0 col")
-        ((input (!model {todo.body}) type "text" style (create width "100%"))))
-       )
-      )
+       (!array ((div class "rounded p-2 todo-check"
+                     onclick {@on-done}))
+               ((span class "col") {todo.body}))
+       ;; Editing controls
+       (!array
+        ((button class "btn close" onclick {@on-stop-edit}) ,(code-char #x00d7))
+        ((form onsubmit {@on-edit-submit} class "m-0 col")
+         ((input (!model {todo.body}) type "text" style (create width "100%"))))
+        )))
      ;; Todo controls
      (!if (not (or {editing} {todo.done}))
-      (div
-       ((hr class "my-0"))
-       ((div class "d-flex align-items-center justify-content-around todo-controls")
-        ((button class "btn btn-link btn-sm" onclick {@on-view}) "View details")
-        ((button class "btn btn-link btn-sm" onclick {@on-delete}) "Delete")
-        ((button class "btn btn-link btn-sm" onclick {@on-edit}) "Edit")
-        )))
+          (div
+           ((hr class "my-0"))
+           ((div class "d-flex align-items-center justify-content-around todo-controls")
+            ((button class "btn btn-link btn-sm" onclick {@on-view}) "View details")
+            ((button class "btn btn-link btn-sm" onclick {@on-delete}) "Delete")
+            ((button class "btn btn-link btn-sm" onclick {@on-edit}) "Edit")
+            )))
      )
    ))
 
@@ -210,11 +208,11 @@
                 ((input type "text" style (create width "100%")
                         (!model {comment.body}) placeholder "Add a comment..."))))
               (!if (= 0 (length {!store.showing-todo-modal-comments}))
-               (.row.justify-content-center
-                (.p-2 "No comments here yet."))
-               (.row.justify-content-stretch
-                (!loop for comment in {!store.showing-todo-modal-comments}
-                       ((todo-comment comment {comment})))))
+                   (.row.justify-content-center
+                    (.p-2 "No comments here yet."))
+                   (.row.justify-content-stretch
+                    (!loop for comment in {!store.showing-todo-modal-comments}
+                           ((todo-comment comment {comment})))))
               )
              )))))))
 

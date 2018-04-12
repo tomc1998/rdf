@@ -29,6 +29,13 @@
           "expand-model-control works")
 (prove:finalize)
 
+(prove:plan 1)
+(prove:is (expand-array-control
+           '(!array (div "0") (div "1")))
+          '((! (array (m "DIV" (create) (array "0")) (m "DIV" (create) (array "1")))))
+          "expand-array-control works")
+(prove:finalize)
+
 (prove:plan 4)
 (prove:is (expand-if-control '(!if {asd} ((div style (create width "100%")) "Hello") (div "Hello")))
           '((! (if {asd}
@@ -51,6 +58,13 @@
                                     value {asd})
                       (array "Hello")))))
           "expand-if-control works with nested control cons")
+(prove:is (expand-if-control
+           '(!if {asd} (!array (div "Hello0") (div "Hello1"))))
+          '((! (if {asd}
+                   (array
+                    (m "DIV" (create) (array "Hello0"))
+                    (m "DIV" (create) (array "Hello1"))))))
+          "expand-if-control works with !array for multiple elements")
 (prove:finalize)
 
 (prove:plan 3)
@@ -81,6 +95,9 @@
 (prove:is (try-expand-control-cons '(!class "my class" (!if {asd} "other classes")))
           (expand-class-control '(!class "my class" (!if {asd} "other classes")))
           "try-expand-control-cons works for !class")
+(prove:is (try-expand-control-cons '(!array (div "Hello") (div "Hello")))
+          (expand-array-control '(!array (div "Hello") (div "Hello")))
+          "try-expand-control-cons works for !array")
 (prove:finalize)
 
 ;; is-control-cons tests
@@ -92,6 +109,8 @@
 (prove:is (is-control-cons '(!model {asd})) t
           "is-control-cons correctly identifies a cc")
 (prove:is (is-control-cons '(!class "a class" (!if {asd} x))) t
+          "is-control-cons correctly identifies a cc")
+(prove:is (is-control-cons '(!array (div "Hello") (div "Hello"))) t
           "is-control-cons correctly identifies a cc")
 (prove:is (is-control-cons '(!something asd)) nil
           "is-control-cons doesn't identify invalid cc word")
