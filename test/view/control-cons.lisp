@@ -53,6 +53,21 @@
           "expand-if-control works with nested control cons")
 (prove:finalize)
 
+(prove:plan 1)
+(prove:is (expand-class-control '(!class "my class here"))
+          '((! (reduce (lambda (s0 s1) (concatenate 'string s0 " " s1))
+                (array "my class here"))))
+          "class control expands string into just a string")
+(prove:is (expand-class-control '(!class "my" "class" "here"))
+          '((! (reduce (lambda (s0 s1) (concatenate 'string s0 " " s1))
+                (array "my" "class" "here"))))
+          "class control concatenates multiple strings")
+(prove:is (expand-class-control '(!class "my" "class" (!if {asd} "here" "HERE")))
+          '((! (reduce (lambda (s0 s1) (concatenate 'string s0 " " s1))
+                (array "my" "class" (! (if {asd} "here" "HERE"))))))
+          "class control works with !if statements")
+(prove:finalize)
+
 ;; is-control-cons tests
 (prove:plan 10)
 (prove:is (is-control-cons '(!if {asd} "Hello")) t
