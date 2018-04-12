@@ -243,7 +243,7 @@
     https://franz.com/support/documentation/6.0/doc/phtml.htm#lhtml) with some
     extras & no need to use keywords. Symbols surrounded with {} are a
     component field (i.e. attr, state, or funtion call)
-    Keywords can be used to reference other component types (when used in the place of a tag)
+    Other components can be referenced by name. See examples.
   ## Examples
     (div
       (p \"This is paragraph 1\")

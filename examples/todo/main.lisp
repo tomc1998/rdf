@@ -17,7 +17,7 @@
      ((div class "row justify-content-center my-5") ((h1 style "text-align: center")
                                                      (strong "Create your account")))
      ((div class "row justify-content-center mt-5")
-      ((div class "col-sm-12 col-lg-8") :reg-form)))))
+      ((div class "col-sm-12 col-lg-8") reg-form)))))
 
 (defun login-page ()
   (bs:gen-form 'login-form '(("email" "Email" "Enter the email you used to create your account")
@@ -30,7 +30,7 @@
    '((div class "container")
      ((div class "row justify-content-center my-5") ((h1 style "text-align: center") (strong "Login")))
      ((div class "row justify-content-center mt-5")
-      ((div class "col-sm-12 col-lg-8") :login-form)))))
+      ((div class "col-sm-12 col-lg-8") login-form)))))
 
 (defun check-email-verif-page ()
   (rdf:register-component
@@ -214,7 +214,7 @@
                 (.p-2 "No comments here yet."))
                (.row.justify-content-stretch
                 (!loop for comment in {!store.showing-todo-modal-comments}
-                       ((:todo-comment comment {comment})))))
+                       ((todo-comment comment {comment})))))
               )
              )))))))
 
@@ -245,15 +245,15 @@
                          (lambda (res) (rdf:dispatch-action fetch-todos))))))
    '(div
      ((div class "container-fluid px-0")
-      :nav-bar
-      :view-todo-modal
+      nav-bar
+      view-todo-modal
       ((div class "row mt-3 justify-content-center")
        ((div class "col-lg-6 col-md-8 col-sm-12")
         ((:add-todo-form onsubmit {@add-todo}))))
       ((div class "row justify-content-center")
        ((div class "col-sm-12 col-md-8 col-lg-6")
         (!loop for todo in {!store.todos-not-done}
-               ((:todo key {todo.id} todo {todo})))))
+               ((todo key {todo.id} todo {todo})))))
       (!if (> (length {!store.todos-done}) 0)
        (div
         (hr)
@@ -262,7 +262,7 @@
         ((div class "row justify-content-center")
          ((div class "col-sm-12 col-md-8 col-lg-6")
           (!loop for todo in {!store.todos-done}
-                 ((:todo key {todo.id} todo {todo})))))))
+                 ((todo key {todo.id} todo {todo})))))))
       ))))
 
 (defun client ()

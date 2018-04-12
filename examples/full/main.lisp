@@ -12,18 +12,18 @@
   ;; Create components
 
   (rdf:register-component
-   :test-children ()
+   'test-children ()
    '(div {children}))
 
   (rdf:register-component
-   :test-if '(:attrs ((apply-class)))
+   'test-if '(:attrs ((apply-class)))
    '((div class (!if {apply-class} "my-class"))
      (!if {apply-class}
       (span "Applying class:" {apply-class})
       (span "Not applying class"))))
 
   (rdf:register-component
-   :reg-form
+   'reg-form
    '(:state ((user (create user "" pass "")))
      :methods ((reg (e) (progn (chain e (prevent-default))
                                (app-req "/reg" {user} (lambda (res code)))))))
@@ -35,7 +35,7 @@
      ((input type "submit"))))
 
   (rdf:register-component
-   :login-form
+   'login-form
    '(:state ((user (create user "" pass "")))
      :methods ((login (e) (progn (chain e (prevent-default))
                                  (app-req "/login" {user} (lambda (res code)
@@ -48,17 +48,17 @@
      ((input type "submit"))))
 
   (rdf:register-component
-   :home
+   'home
    '(:methods ((access-data () (app-req "/access-data" (array) (lambda (res code) (alert res))))))
    '(div
      (h1 "Register")
-     :reg-form
+     reg-form
      (h1 "Login")
-     :login-form
+     login-form
      ((button onclick {@access-data}) "Access sensitive data")
-     (:test-children ((div class (!if 1 "asdtrue" "asdfalse")) "hello"))
-     ((:test-if apply-class t))
-     ((:test-if apply-class nil)))))
+     (test-children ((div class (!if 1 "asdtrue" "asdfalse")) "hello"))
+     ((test-if apply-class t))
+     ((test-if apply-class nil)))))
 
 (defun setup-routes ()
   (rdf:set-view-routes '(("/" home))))

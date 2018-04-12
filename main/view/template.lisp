@@ -48,10 +48,9 @@ cdr, otherwise returns nil."
         (cond
           ;; Check if this is a list
           ((typep lhtml 'list)
-           (let* ((raw-tag (if (typep (car lhtml) 'list) (caar lhtml) (car lhtml)))
-                  (tag (if (typep raw-tag 'keyword)
-                           (intern (string raw-tag))
-                           (string raw-tag)))
+           (let* ((raw-tag (if (listp (car lhtml)) (caar lhtml) (car lhtml)))
+                  ;; Check if tag is a comp
+                  (tag (if (getf *comp-list* raw-tag) raw-tag (string raw-tag)))
                   (attr-list (loop for (k v) on (if (typep (car lhtml) 'list) (cdar lhtml) nil) by #'cddr
                                 append
                                   (list k (try-expand-ps-inject v v))))
@@ -63,6 +62,6 @@ cdr, otherwise returns nil."
           ;; If just a symbol intern if a keyword (because it'll be a component)
           ;; or just passthrough otherwise
           ((typep lhtml 'symbol)
-           (if (typep lhtml 'keyword) `(m ,(intern (string lhtml))) lhtml))
+           (if (getf *comp-list* lhtml) `(m ,lhtml) lhtml))
           (t lhtml)))
     ))
