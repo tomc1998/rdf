@@ -16,7 +16,7 @@
    '(div {children}))
 
   (rdf:register-component
-   :test-if '(:attrs (apply-class))
+   :test-if '(:attrs ((apply-class)))
    '((div class (!if {apply-class} "my-class"))
      (!if {apply-class}
       (span "Applying class:" {apply-class})
@@ -24,7 +24,7 @@
 
   (rdf:register-component
    :reg-form
-   '(:state (user (create user "" pass ""))
+   '(:state ((user (create user "" pass "")))
      :methods ((reg (e) (progn (chain e (prevent-default))
                                (app-req "/reg" {user} (lambda (res code)))))))
    '((form onsubmit {@reg})
@@ -36,7 +36,7 @@
 
   (rdf:register-component
    :login-form
-   '(:state (user (create user "" pass ""))
+   '(:state ((user (create user "" pass "")))
      :methods ((login (e) (progn (chain e (prevent-default))
                                  (app-req "/login" {user} (lambda (res code)
                                                             (chain console (log res))))))))
@@ -71,7 +71,7 @@
     (lambda (user)
       ;; Hash pwd & insert, returning the user's ID
       (setf (slot-value user 'pass)
-            (rdf:hash-pwd (rdf:string-to-octets (slot-value user 'pass))))
+            (rdf:hash-pwd (slot-value user 'pass)))
       (rdf:insert-one user)))
   (rdf:define-app-req "/login" (user-auth)
     (lambda (user)
@@ -83,7 +83,7 @@
         (if (not first) nil
             (let ((db-user (car first)))
               ;; Check pwd hash, return true & set session if it worked
-              (if (rdf:check-pwd (rdf:string-to-octets (slot-value user 'pass))
+              (if (rdf:check-pwd (slot-value user 'pass)
                                  (slot-value db-user 'pass))
                   (progn (setf (rdf:session-value 'user-id) (slot-value db-user 'rdf:id))
                          T)

@@ -94,7 +94,7 @@
   "Expand all the interpolations of the given template with the given fields."
   ;; First parse out the fields & generate a symbol table
   (let*
-      ((state (loop for (k v) on (getf fields :state) by #'cddr collect (list k v)))
+      ((state (loop for (k v) in (getf fields :state) collect (list k v)))
        (computed (getf fields :computed))
        (attrs (getf fields :attrs))
        (methods (getf fields :methods))
@@ -103,7 +103,7 @@
         (append
          '(:{children} (! (@ vnode children)))
          '(:{!store} (! (@ window store)))
-         (loop for a in attrs
+         (loop for (a nil) in attrs
             append (list
                     (intern (format nil "{~a}" a) :keyword)
                     `(! (@ vnode state ,a))))
@@ -265,7 +265,7 @@
     so you would actually define a component named 'my-comp' with an attribute
     named 'my-attr'."
   ;; Extract data from the fields list
-  (let* ((state (loop for (k v) on (getf fields :state) by #'cddr collect (list k v)))
+  (let* ((state (getf fields :state))
          (computed (getf fields :computed))
          (attrs (getf fields :attrs))
          (methods (getf fields :methods))
@@ -290,7 +290,7 @@
                          (cdr (assoc 'oninit lifecycle :test
                                      (lambda (s0 s1) (string= (string s0) (string s1)))))))
          ;; Build state declarations of attrs for parenscript (these will go in the oninit method)
-         (attr-state-decl (loop for a in attrs collect `(setf (@ vnode state ,a) (@ vnode attrs ,a))))
+         (attr-state-decl (loop for (a nil) in attrs collect `(setf (@ vnode state ,a) (@ vnode attrs ,a))))
 
          ;; Create computed & method property declarations
          (computed-decl

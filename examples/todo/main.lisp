@@ -116,7 +116,7 @@
 
   (rdf:register-component
    'todo
-   '(:attrs (todo) :state (editing nil prev-body-value "")
+   '(:attrs ((todo)) :state ((editing nil) (prev-body-value ""))
      :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
                (on-delete () (rdf:dispatch-action delete-todo (array {todo.id})))
                (on-edit () (progn (setf {prev-body-value} {todo.body}) (setf {editing} T)))
@@ -159,7 +159,7 @@
 
 (defun todo-comment ()
   (rdf:register-component
-   'todo-comment '(:attrs (comment))
+   'todo-comment '(:attrs ((comment)))
    '((.media.border.rounded.my-1.p-2 style (create width "100%"))
      (.media-body {comment.body}))
    )
@@ -176,7 +176,7 @@
      (lambda (res) (rdf:dispatch-action fetch-comments (array todo-id)))))
   (rdf:register-component
    'view-todo-modal
-   '(:state (comment (create body "") already-showing nil)
+   '(:state ((comment (create body "")) (already-showing nil))
      :methods ((add-comment ()
                 (progn
                   (rdf:dispatch-action
@@ -224,8 +224,8 @@
    '(app-req "/get-todos" () (lambda (res) (setf {!store.todos} res))))
   (rdf:register-component
    'add-todo-form
-   '(:state (todo (create body "" done false))
-     :attrs (onsubmit)
+   '(:state ((todo (create body "" done false)))
+     :attrs ((onsubmit))
      :methods ((submit () (progn ({onsubmit} {todo}) (setf {todo.body} "")))))
    '((form onsubmit {@submit}) ((input style (create width "100%")
                                  (!model {todo.body})

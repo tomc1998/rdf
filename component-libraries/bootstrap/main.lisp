@@ -25,7 +25,7 @@
   the URI '/login', then alert 'Logged in.' if the request is successful. "
   (eval `(rdf:register-component
           ',name
-          '(:state (obj (create email "" pass ""))
+          '(:state ((obj (create email "" pass "")))
             :methods ((onsubmit () (progn (var obj {obj}) ,@callback))))
           '((form onsubmit {@onsubmit})
            ,@(loop for (name label placeholder . options) in inputs do
