@@ -53,7 +53,7 @@
           "expand-if-control works with nested control cons")
 (prove:finalize)
 
-(prove:plan 1)
+(prove:plan 3)
 (prove:is (expand-class-control '(!class "my class here"))
           '((! (reduce (lambda (s0 s1) (concatenate 'string s0 " " s1))
                 (array "my class here"))))
@@ -66,6 +66,21 @@
           '((! (reduce (lambda (s0 s1) (concatenate 'string s0 " " s1))
                 (array "my" "class" (! (if {asd} "here" "HERE"))))))
           "class control works with !if statements")
+(prove:finalize)
+
+(prove:plan 4)
+(prove:is (try-expand-control-cons '(!if {asd} "asd"))
+          (expand-if-control '(!if {asd} "asd"))
+          "try-expand-control-cons works for !if")
+(prove:is (try-expand-control-cons '(!loop for x in {my-list} (div x)))
+          (expand-loop-control '(!loop for x in {my-list} (div x)))
+          "try-expand-control-cons works for !loop")
+(prove:is (try-expand-control-cons '(!model {asd}))
+          (expand-model-control '(!model {asd}))
+          "try-expand-control-cons works for !model")
+(prove:is (try-expand-control-cons '(!class "my class" (!if {asd} "other classes")))
+          (expand-class-control '(!class "my class" (!if {asd} "other classes")))
+          "try-expand-control-cons works for !class")
 (prove:finalize)
 
 ;; is-control-cons tests
