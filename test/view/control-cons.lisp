@@ -29,6 +29,30 @@
           "expand-model-control works")
 (prove:finalize)
 
+(prove:plan 4)
+(prove:is (expand-if-control '(!if {asd} ((div style (create width "100%")) "Hello") (div "Hello")))
+          '((! (if {asd}
+                   (m "DIV" (create style (create width "100%")) (array "Hello"))
+                   (m "DIV" (create) (array "Hello")))))
+          "expand-if-control works with if & else statement")
+(prove:is (expand-if-control '(!if {asd} ((div style (create width "100%")) "Hello")))
+          '((! (if {asd}
+                   (m "DIV" (create style (create width "100%")) (array "Hello")))))
+          "expand-if-control works with just if statement")
+(prove:is (expand-if-control '(!if (= (+ 2 3) 5) ((div style (create width "100%")) "Hello")))
+          '((! (if (= (+ 2 3) 5)
+                   (m "DIV" (create style (create width "100%")) (array "Hello")))))
+          "expand-if-control works with arbitrary parenscript as the condition")
+(prove:is (expand-if-control
+           '(!if {asd} ((div (!model {asd})) "Hello")))
+          '((! (if {asd}
+                   (m "DIV" (create onchange
+                                    (chain m (with-attr "value" (lambda (v) (setf {asd} v))))
+                                    value {asd})
+                      (array "Hello")))))
+          "expand-if-control works with nested control cons")
+(prove:finalize)
+
 ;; is-control-cons tests
 (prove:plan 10)
 (prove:is (is-control-cons '(!if {asd} "Hello")) t
