@@ -131,53 +131,56 @@
 (defun error-check-fields (fields)
   "Checks for common errors in defcomp fields"
   (loop for (k v) on fields by #'cddr do
-       (if (not (find k '(:lifecycle :attrs :state :computed :methods)))
+       (if (not (find k '(:lifecycle :attrs :state :computed :methods :anim-in :anim-out)))
            (error "Unknown field key in component: ~s" k))
-       (if (not (consp v))
+       (if (and (not (find k '(:anim-in :anim-out))) (not (consp v)))
            (error "~s field in component is not a cons: ~s" k v))
-       (loop for item in v do
-            (if (not (consp item))
-                (error "In component field ~s item ~s is not a cons (all fields
+       (if
+        (consp v)
+        (loop for item in v do
+             (if (not (consp item))
+                 (error "In component field ~s item ~s is not a cons (all fields
                 should be alists)"
-                       v item))
-            (cond
-              ((eq k :state)
-               (if (/= (length item) 2)
-                   (error "State fields expected to have 2 items - a name, and
+                        v item))
+             (cond
+               ((eq k :state)
+                (if (/= (length item) 2)
+                    (error "State fields expected to have 2 items - a name, and
                    an initial value. Yours has ~a - ~s"
-                          (length item) item)))
-              ((eq k :attrs)
-               (if (not (or (= (length item) 1) (= (length item) 2)))
-                   (error "Attrs fields expected to have 1 or 2 items - a name, and
+                           (length item) item)))
+               ((eq k :attrs)
+                (if (not (or (= (length item) 1) (= (length item) 2)))
+                    (error "Attrs fields expected to have 1 or 2 items - a name, and
                    an initial value. Yours has ~a - ~s"
-                          (length item) item)))
-              ((eq k :computed)
-               (if (/= (length item) 2)
-                   (error "Computed fields expected to have 2 items - a name, and
+                           (length item) item)))
+               ((eq k :computed)
+                (if (/= (length item) 2)
+                    (error "Computed fields expected to have 2 items - a name, and
                    a parenscript expression. Yours has ~a - ~s"
-                          (length item) item)))
-              ((eq k :methods)
-               (if (/= (length item) 3)
-                   (error "Method fields shold have 3 fields - name, params, and
+                           (length item) item)))
+               ((eq k :methods)
+                (if (/= (length item) 3)
+                    (error "Method fields shold have 3 fields - name, params, and
                    body expr. Yours has ~a - ~s"
-                          (length item) item)))
-              ((eq k :lifecycle)
-               (if (/= (length item) 2)
-                   (error "Lifecycle methods should have 2 fields - a name, and
+                           (length item) item)))
+               ((eq k :lifecycle)
+                (if (/= (length item) 2)
+                    (error "Lifecycle methods should have 2 fields - a name, and
                    body expr. Yous has ~a - ~s"
-                          (length item) item))
-               (if (not (find (car item)
-                              '(oninit onupdate onbeforeupdate onremove
-                              onbeforeremove oncreate)))
-                   (error "Unrecognized lifecycle method: ~s. Possible values:
+                           (length item) item))
+                (if (not (find (string (car item))
+                               '("ONINIT" "ONUPDATE" "ONBEFOREUPDATE" "ONREMOVE"
+                                 "ONBEFOREREMOVE" "ONCREATE") :test #'string=))
+                    (progn (print (string (car item)))
+                           (error "Unrecognized lifecycle method: ~s. Possible values:
                    - oninit
                    - onupdate
                    - onbeforeupdate
                    - onremove
                    - onbeforeremove
-                   - oncreate" (car item)))
-               )
-              ))))
+                   - oncreate" (car item))))
+                )
+               )))))
 
 (defun defcomp (fields template)
   "
@@ -189,10 +192,12 @@
 
   # Fields
   ## Example
-  (defcomp (
+  (defcomp '(
     :lifecycle ((oninit (chain console (log \"Hello, this is the component init\"))))
     :attrs ((first-name nil) (last-name nil))
     :state ((count 0))
+    :anim-in :fade
+    :anim-out (\"my-custom-class\" 500)
     :computed (
       (double-count (* 2 {count}))
       (full-name (concatenate 'string {first-name} {last-name}))
@@ -200,7 +205,7 @@
     :methods (
       (inc () (setf {count} (1+ {count})))
     ))
-    (div
+    '(div
       \" first name: \" {first-name}
       (\"br\")
       \" last name: \" {last-name}
@@ -227,6 +232,20 @@
   return anything / take parameters. Use computed properties for this. The body
   of the method can contain interpolated values just like the computed properties.
 
+  ## Animations
+  :anim-in and :anim-out are provided for animations. There are a few values you
+  can use for in-built animations:
+  - :fade
+  Custom anim-in animations can be done with CSS classes & animations - just add
+  the class to the root element, and define a CSS animation for that class. You
+  can also pass in a string for the anim-in parameter, and this will get applied
+  to the element before it gets added to the DOM.
+  Custom anim-out animations can be done by specifying a css class to apply on
+  element removal, and a duration. For example:
+  :anim-out (\"some-class\" 500)
+  will apply the 'some-class' class for 500 millis.
+
+  ## Lifecycle methods
   Lifecycle methods can be defined inside :lifecycle in an assoc list. See the
   examples & mithril documentation for all lifecycle method documentation. vnode
   is automatically in scope, and interpolations can be used.
@@ -318,7 +337,9 @@
   ;; This errors if there are abnormalities in the fields
   (error-check-fields fields)
   ;; Extract data from the fields list
-  (let* ((state (getf fields :state))
+  (let* ((anim-in (getf fields :anim-in))
+         (anim-out (getf fields :anim-out))
+         (state (getf fields :state))
          (computed (getf fields :computed))
          (attrs (getf fields :attrs))
          (methods (getf fields :methods))
@@ -364,13 +385,35 @@
          ,@(loop for (k v) in computed-decl append (list k k))
          ,@(loop for (k v) in method-decl append (list k k))
 
+         ;; Lifecycle methods
          ,@(if onupdate `(onupdate (lambda (vnode) ,@onupdate)))
          ,@(if onbeforeupdate `(onbeforeupdate (lambda (vnode) ,@onbeforeupdate)))
          ,@(if onremove `(onremove (lambda (vnode) ,@onremove)))
-         ,@(if onbeforeremove `(onbeforeremove (lambda (vnode) ,@onbeforeremove)))
-         ,@(if oncreate `(oncreate (lambda (vnode) ,@oncreate)))
 
-         ;; Lifecycle methods
+         onbeforeremove
+         (lambda (vnode)
+           ,(if anim-out
+                `(progn
+                   (chain vnode dom class-list
+                          (add
+                           ,(if (keywordp anim-out)
+                                (case anim-out (:fade "rdf-fade-out"))
+                                (first anim-out))))
+                   (new (*Promise
+                         (lambda (resolve)
+                           (set-timeout resolve ,(if (keywordp anim-out)
+                                                     300 (second anim-out))))))))
+           ,@onbeforeremove)
+
+         oncreate
+         (lambda (vnode)
+           ,(if anim-in `(chain vnode dom class-list
+                                (add
+                                 ,(if (keywordp anim-in)
+                                      (case anim-in (:fade "rdf-fade-in"))
+                                      anim-in))))
+           ,@oncreate)
+
          oninit (lambda (vnode)
                   ,@attr-state-decl
                   ,@(loop for (k v) in state collect `(setf (@ vnode state ,k) ,v))

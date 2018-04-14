@@ -26,6 +26,7 @@
     (setf (hunchentoot:content-type*) "text/html")
     (format nil "<html>
       <head>
+        <link rel=\"stylesheet\" href=\"/rdf/lib.css\" type=\"text/css\">
         <link rel=\"stylesheet\" href=\"/rdf/style.css\" type=\"text/css\">
         ~{
           <link rel=\"stylesheet\" href=\"~a\" type=\"text/css\">
@@ -45,6 +46,9 @@
   (hunchentoot:define-easy-handler (app-css :uri "/rdf/style.css" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "text/css")
     (render-app-css))
+  (hunchentoot:define-easy-handler (lib-css :uri "/rdf/lib.css" :default-request-type :GET) ()
+    (setf (hunchentoot:content-type*) "text/css")
+    (render-lib-css))
   (hunchentoot:define-easy-handler (app-js :uri "/rdf/app.js" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "application/javascript")
     (render-app-js))

@@ -19,6 +19,31 @@ to another page, and navigate to a login page."
       ,(if error-callback `(chain res (then ,error-callback)))
       )))
 
+(defun render-lib-css ()
+  "Renders a CSS library for standard classes (like fade-in / fade-out anims)"
+  (reduce
+   (lambda (s0 s1) (concatenate 'string s0 s1))
+   (list
+    (lass:compile-and-write
+     '(.rdf-fade-in
+       :animation rdf-fade-in "0.3s" forwards
+       ))
+    (lass:compile-and-write
+     '(:keyframes "rdf-fade-in"
+       (from :opacity 0)
+       (to :opacity 1)
+       ))
+    (lass:compile-and-write
+     '(.rdf-fade-out
+       :animation rdf-fade-out "0.3s" forwards
+       ))
+    (lass:compile-and-write
+     '(:keyframes "rdf-fade-out"
+       (from :opacity 1)
+       (to :opacity 0)
+       ))
+    )))
+
 (defun render-lib-js ()
   "Returns a js library with convenience functions"
   (eval

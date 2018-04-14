@@ -116,7 +116,8 @@
 
   (rdf:register-component
    'todo
-   '(:attrs ((todo)) :state ((editing nil) (prev-body-value ""))
+   '(:anim-in :fade :anim-out :fade
+     :attrs ((todo)) :state ((editing nil) (prev-body-value ""))
      :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
                (on-delete () (rdf:dispatch-action delete-todo {todo.id}))
                (on-edit () (progn (setf {prev-body-value} {todo.body}) (setf {editing} T)))
@@ -126,7 +127,7 @@
                                          (rdf:dispatch-action edit-todo (array {todo.id} {todo.body}))))
                ))
    `((div class (!class "border rounded my-1 my-md-2 my-lg-3"
-                 (!if {todo.done} "todo-checked")))
+                        (!if {todo.done} "todo-checked")))
      ;; Todo view
      ((div class "d-flex align-items-center p-3 todo-body"
            style (create overflow-x "auto"))
@@ -247,7 +248,7 @@
       view-todo-modal
       ((div class "row mt-3 justify-content-center")
        ((div class "col-lg-6 col-md-8 col-sm-12")
-        ((:add-todo-form onsubmit {@add-todo}))))
+        ((add-todo-form onsubmit {@add-todo}))))
       ((div class "row justify-content-center")
        ((div class "col-sm-12 col-md-8 col-lg-6")
         (!loop for todo in {!store.todos-not-done}
