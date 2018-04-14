@@ -25,6 +25,7 @@
 
            ;; Request stuff
            :define-app-req
+           :define-file-handler
            :app-req-error
            :raise-app-error
 

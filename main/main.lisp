@@ -38,7 +38,7 @@
         ~{
         <script src=\"~a\"></script>
         ~}
-        <script src=\"//unpkg.com/mithril/mithril.js\"></script>
+        <script src=\"/rdf/mithril.js\"></script>
         <script src=\"/rdf/lib.js\"></script>
         <script src=\"/rdf/app.js\"></script>
       </body>
@@ -55,6 +55,7 @@
   (hunchentoot:define-easy-handler (lib-js :uri "/rdf/lib.js" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "application/javascript")
     (render-lib-js))
+  (define-file-handler "/rdf/mithril.js" (asdf:system-relative-pathname :rdf "lib/mithril.js"))
   )
 
 (defun rdf-start ()
@@ -84,6 +85,15 @@
 back to the client, and an error code type if you're doing some custom
 handling."
   (error 'app-req-error :message message :code code))
+
+(defun define-file-handler (uri path)
+  "Setup a file handler on a given URI to handle a request & serve the file at
+  the given path."
+  (print uri)
+  (print path)
+  (let ((callback (hunchentoot:create-static-file-dispatcher-and-handler uri path)))
+    (eval `(hunchentoot:define-easy-handler (,(intern uri) :uri ,uri) ()
+             (funcall (funcall ,callback hunchentoot:*request*))))))
 
 (defmacro define-app-req (uri params callback &key require-auth)
   "Listen for an app request. An 'app request' is a POST request with json

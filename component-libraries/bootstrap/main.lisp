@@ -47,15 +47,24 @@
   (print "Loading bootstrap components...")
   ;; Add bootstrap CSS
   (rdf:add-additional-stylesheet-url
-   "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
+   "/bs/bootstrap.css")
 
   ;; Add bootstrap script dependencies - JQuery, Popper, and Bootstrap
   (rdf:add-additional-script-url
-   "https://code.jquery.com/jquery-3.2.1.slim.min.js")
+   "/bs/jquery-slim.js")
   (rdf:add-additional-script-url
-   "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js")
+   "/bs/popper.js")
   (rdf:add-additional-script-url
-   "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js")
+   "/bs/bootstrap.js")
+
+  (rdf:define-file-handler "/bs/bootstrap.js"
+      (namestring (asdf:system-relative-pathname 'bootstrap "lib/bootstrap.js")))
+  (rdf:define-file-handler "/bs/bootstrap.css"
+      (namestring (asdf:system-relative-pathname 'bootstrap "lib/bootstrap.css")))
+  (rdf:define-file-handler "/bs/popper.js"
+      (namestring (asdf:system-relative-pathname 'bootstrap "lib/popper.js")))
+  (rdf:define-file-handler "/bs/jquery-slim.js"
+      (namestring (asdf:system-relative-pathname 'bootstrap "lib/jquery-slim.js")))
 
   ;; Load error component
   (rdf:register-component
