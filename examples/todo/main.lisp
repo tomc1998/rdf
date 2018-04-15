@@ -117,7 +117,7 @@
 
   (rdf:register-component
    'todo
-   '(:anim-in :fade-t :anim-out :fade-t
+   '(:anim-in :fade-t-expand-y :anim-out :fade-t-collapse-y
      :attrs ((todo)) :state ((editing nil) (prev-body-value ""))
      :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
                (on-delete () (rdf:dispatch-action delete-todo {todo.id}))

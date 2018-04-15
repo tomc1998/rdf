@@ -24,6 +24,7 @@ to another page, and navigate to a login page."
   (reduce
    (lambda (s0 s1) (concatenate 'string s0 s1))
    (list
+    ;; IN ANIMATIONS
     (lass:compile-and-write
      '(.rdf-fade-in :animation rdf-fade-in "0.3s" forwards))
     (lass:compile-and-write
@@ -34,6 +35,18 @@ to another page, and navigate to a login page."
      '(.rdf-fade-in-t :animation rdf-fade-in "0.3s" forwards \, rdf-from-t "0.3s" forwards))
     (lass:compile-and-write
      '(.rdf-fade-in-b :animation rdf-fade-in "0.3s" forwards \, rdf-from-b "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-in-l-expand-y :overflow-y visible :animation
+       rdf-fade-in "0.3s" forwards \,rdf-from-l "0.3s" forwards \,rdf-expand-y "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-in-r-expand-y :overflow-y visible :animation
+       rdf-fade-in "0.3s" forwards \,rdf-from-r "0.3s" forwards \,rdf-expand-y "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-in-b-expand-y :overflow-y visible :animation
+       rdf-fade-in "0.3s" forwards \,rdf-from-b "0.3s" forwards \,rdf-expand-y "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-in-t-expand-y :overflow-y visible :animation
+       rdf-fade-in "0.3s" forwards \,rdf-from-t "0.3s" forwards \,rdf-expand-y "0.3s" forwards))
     (lass:compile-and-write '(:keyframes "rdf-fade-in" (from :opacity 0) (to :opacity 1)))
     (lass:compile-and-write '(:keyframes "rdf-from-l"
                               (from :transform translateX "-10%")
@@ -47,6 +60,14 @@ to another page, and navigate to a login page."
     (lass:compile-and-write '(:keyframes "rdf-from-b"
                               (from :transform translateY "10%")
                               (to :transform translateY 0)))
+    (lass:compile-and-write '(:keyframes "rdf-expand-y"
+                              (from :max-height 0)
+                              (to :max-height 2000)))
+    (lass:compile-and-write '(:keyframes "rdf-expand-x"
+                              (from :max-width 0)
+                              (to :max-width 2000)))
+
+    ;; OUT ANIMATIONS
     (lass:compile-and-write
      '(.rdf-fade-out :animation rdf-fade-out "0.3s" forwards))
     (lass:compile-and-write
@@ -57,6 +78,18 @@ to another page, and navigate to a login page."
      '(.rdf-fade-out-t :animation rdf-fade-out "0.3s" forwards \, rdf-to-t "0.3s" forwards))
     (lass:compile-and-write
      '(.rdf-fade-out-b :animation rdf-fade-out "0.3s" forwards \, rdf-to-b "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-out-l-collapse-y :overflow-y visible :animation
+       rdf-fade-out "0.3s" forwards \,rdf-to-l "0.3s" forwards \,rdf-collapse-y "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-out-r-collapse-y :overflow-y visible :animation
+       rdf-fade-out "0.3s" forwards \,rdf-to-r "0.3s" forwards \,rdf-collapse-y "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-out-b-collapse-y :overflow-y visible :animation
+       rdf-fade-out "0.3s" forwards \,rdf-to-b "0.3s" forwards \,rdf-collapse-y "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-out-t-collapse-y :overflow-y visible :animation
+       rdf-fade-out "0.3s" forwards \,rdf-to-t "0.3s" forwards \,rdf-collapse-y "0.3s" forwards))
 
     (lass:compile-and-write '(:keyframes "rdf-fade-out" (from :opacity 1) (to :opacity 0)))
     (lass:compile-and-write '(:keyframes "rdf-to-l"
@@ -71,6 +104,14 @@ to another page, and navigate to a login page."
     (lass:compile-and-write '(:keyframes "rdf-to-b"
                               (from :transform translateY 0)
                               (to :transform translateY "10%")))
+    (lass:compile-and-write '(:keyframes "rdf-fade-out" (from :opacity 1) (to :opacity 0)))
+    (lass:compile-and-write '(:keyframes "rdf-collapse-y"
+                              (from :max-height 1000)
+                              (to :max-height 0)))
+    (lass:compile-and-write '(:keyframes "rdf-collapse-x"
+                              (from :max-width 1000)
+                              (to :max-width 0)))
+
 
     )))
 

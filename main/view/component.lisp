@@ -187,13 +187,23 @@
     :fade-l "rdf-fade-in-l"
     :fade-r "rdf-fade-in-r"
     :fade-t "rdf-fade-in-t"
-    :fade-b "rdf-fade-in-b"))
+    :fade-b "rdf-fade-in-b"
+    :fade-l-expand-y "rdf-fade-in-l-expand-y"
+    :fade-r-expand-y "rdf-fade-in-r-expand-y"
+    :fade-t-expand-y "rdf-fade-in-t-expand-y"
+    :fade-b-expand-y "rdf-fade-in-b-expand-y"
+    ))
 (defparameter *built-in-out-anim*
   '(:fade "rdf-fade-out"
     :fade-l "rdf-fade-out-l"
     :fade-r "rdf-fade-out-r"
     :fade-t "rdf-fade-out-t"
-    :fade-b "rdf-fade-out-b"))
+    :fade-b "rdf-fade-out-b"
+    :fade-l-collapse-y "rdf-fade-out-l-collapse-y"
+    :fade-r-collapse-y "rdf-fade-out-r-collapse-y"
+    :fade-t-collapse-y "rdf-fade-out-t-collapse-y"
+    :fade-b-collapse-y "rdf-fade-out-b-collapse-y"
+    ))
 
 (defun defcomp (fields template)
   "
