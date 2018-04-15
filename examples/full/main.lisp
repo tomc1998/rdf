@@ -98,4 +98,4 @@
   (setup-routes)
   (setup-app-req)
   (rdf:rdf-stop)
-  (rdf:rdf-start))
+  (rdf:rdf-start 4242))

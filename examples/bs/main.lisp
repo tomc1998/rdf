@@ -43,5 +43,5 @@
 
   ;; Start the server
   (rdf:rdf-stop)
-  (rdf:rdf-start)
+  (rdf:rdf-start 4242)
   )

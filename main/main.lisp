@@ -58,10 +58,10 @@
   (define-file-handler "/rdf/mithril.js" (asdf:system-relative-pathname :rdf "lib/mithril.js"))
   )
 
-(defun rdf-start ()
+(defun rdf-start (port)
   (setup-view-routes)
   (if (and *server-ref* (hunchentoot:started-p *server-ref*)) nil
-      (progn (setf *server-ref* (make-instance 'hunchentoot:easy-acceptor :port 4242))
+      (progn (setf *server-ref* (make-instance 'hunchentoot:easy-acceptor :port port))
              (hunchentoot:start *server-ref*))))
 
 (defun rdf-stop () (if (and *server-ref* (hunchentoot:started-p *server-ref*))

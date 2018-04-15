@@ -375,4 +375,4 @@
   (client)
   (server)
   (rdf:rdf-stop)
-  (rdf:rdf-start))
+  (rdf:rdf-start 80))
