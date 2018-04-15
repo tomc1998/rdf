@@ -2,12 +2,13 @@
 
 (defvar *server-ref* nil)
 
-(defparameter *default-error-component* (defcomp () '(div {!store.rdf-app-error})))
 (defparameter *comp-list* ())
-(defparameter *error-component* *default-error-component*)
 (defparameter *routes* ())
 (defparameter *init-state* ())
 (defparameter *lass-styles* ())
+
+(defparameter *default-error-component* (defcomp () '(div {!store.rdf-app-error})))
+(defparameter *error-component* *default-error-component*)
 
 (defun register-lass (name lass)
   "Register the given LASS (lisp css) rules to the given name. If the name has

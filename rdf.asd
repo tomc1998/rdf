@@ -84,12 +84,13 @@
   :components ((:file "main/json-ser")
                (:file "main/json-deser")
                (:file "main/entity")
-               (:file "main/view/view")
+               (:file "main/view/view" :depends-on ("main/view/component"))
                (:file "main/view/lib")
                (:file "main/view/store")
-               (:file "main/view/template" :depends-on ("main/view/view"))
-               (:file "main/view/component" :depends-on ("main/view/template"))
-               (:file "main/view/control-cons")
+               (:file "main/view/template" :depends-on ("main/view/store"))
+               (:file "main/view/component" :depends-on ("main/view/template"
+                                                         "main/view/control-cons"))
+               (:file "main/view/control-cons" :depends-on ("main/view/template"))
                (:file "main/main"
                       :depends-on ("main/json-ser"
                                    "main/json-deser"
