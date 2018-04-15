@@ -117,7 +117,7 @@
 
   (rdf:register-component
    'todo
-   '(:anim-in :fade-t-expand-y :anim-out :fade-t-collapse-y
+   '(:anim-in :fade-l-expand-y :anim-out :fade-l-collapse-y
      :attrs ((todo)) :state ((editing nil) (prev-body-value ""))
      :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
                (on-delete () (rdf:dispatch-action delete-todo {todo.id}))
@@ -159,7 +159,7 @@
 
 (defun todo-comment ()
   (rdf:register-component
-   'todo-comment '(:anim-in :fade-t :anim-out :fade-t :attrs ((comment)))
+   'todo-comment '(:anim-in :fade-t-expand-y :anim-out :fade-t-collapse-y :attrs ((comment)))
    '((.media.border.rounded.my-1.p-2 style (create width "100%"))
      (.media-body {comment.body}))
    )
@@ -234,7 +234,7 @@
                                  placeholder "Add an item"))))
   (rdf:register-component
    'home
-   '(:anim-in :fade
+   '(
      :lifecycle ((oninit (progn
                            (if (not {!store.session})
                                (chain m route (set "/get-started"))
