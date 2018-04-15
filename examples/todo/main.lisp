@@ -12,7 +12,7 @@
                '(app-req "/reg" (array obj) (lambda () (chain m route (set "/check-email")))))
 
   (rdf:register-component
-   'reg ()
+   'reg '(:anim-in :fade)
    '((div class "container")
      ((div class "row justify-content-center my-5") ((h1 style "text-align: center")
                                                      (strong "Create your account")))
@@ -26,7 +26,7 @@
                  (lambda (id) (setf {!store.session} (create user-id id))
                          (chain m route (set "/")))))
   (rdf:register-component
-   'login ()
+   'login '(:anim-in :fade)
    '((div class "container")
      ((div class "row justify-content-center my-5") ((h1 style "text-align: center") (strong "Login")))
      ((div class "row justify-content-center mt-5")
@@ -34,7 +34,7 @@
 
 (defun check-email-verif-page ()
   (rdf:register-component
-   'check-email-verif ()
+   'check-email-verif '(:anim-in :fade)
    '((div class "container")
      ((div class "row justify-content-center my-5") (h1 (strong "TODO")))
      ((div class "row mt-5 mb-3 justify-content-center")
@@ -46,7 +46,8 @@
 (defun splash-page ()
   (rdf:register-component
    'splash
-   '(:lifecycle ((oninit (if {!store.session} (chain m route (set "/"))))))
+   '(:anim-in :fade
+     :lifecycle ((oninit (if {!store.session} (chain m route (set "/"))))))
    '(div
      ((div class "jumbotron")
       ((h1 class "display-4") "TODO")
@@ -116,7 +117,7 @@
 
   (rdf:register-component
    'todo
-   '(:anim-in :fade :anim-out :fade
+   '(:anim-in :fade-t :anim-out :fade-t
      :attrs ((todo)) :state ((editing nil) (prev-body-value ""))
      :methods ((on-done () (rdf:dispatch-action set-done (array {todo.id} (not {todo.done}))))
                (on-delete () (rdf:dispatch-action delete-todo {todo.id}))
@@ -158,7 +159,7 @@
 
 (defun todo-comment ()
   (rdf:register-component
-   'todo-comment '(:attrs ((comment)))
+   'todo-comment '(:anim-in :fade-t :anim-out :fade-t :attrs ((comment)))
    '((.media.border.rounded.my-1.p-2 style (create width "100%"))
      (.media-body {comment.body}))
    )
@@ -223,7 +224,8 @@
    '(app-req "/get-todos" () (lambda (res) (setf {!store.todos} res))))
   (rdf:register-component
    'add-todo-form
-   '(:state ((todo (create body "" done false)))
+   '(:anim-in :fade-l
+     :state ((todo (create body "" done false)))
      :attrs ((onsubmit))
      :methods ((submit () (progn ({onsubmit} {todo}) (setf {todo.body} "")))))
    '((form onsubmit {@submit}) ((input style (create width "100%")
@@ -232,7 +234,8 @@
                                  placeholder "Add an item"))))
   (rdf:register-component
    'home
-   '(:lifecycle ((oninit (progn
+   '(:anim-in :fade
+     :lifecycle ((oninit (progn
                            (if (not {!store.session})
                                (chain m route (set "/get-started"))
                                (rdf:dispatch-action fetch-todos)))))

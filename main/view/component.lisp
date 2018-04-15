@@ -182,6 +182,19 @@
                 )
                )))))
 
+(defparameter *built-in-in-anim*
+  '(:fade "rdf-fade-in"
+    :fade-l "rdf-fade-in-l"
+    :fade-r "rdf-fade-in-r"
+    :fade-t "rdf-fade-in-t"
+    :fade-b "rdf-fade-in-b"))
+(defparameter *built-in-out-anim*
+  '(:fade "rdf-fade-out"
+    :fade-l "rdf-fade-out-l"
+    :fade-r "rdf-fade-out-r"
+    :fade-t "rdf-fade-out-t"
+    :fade-b "rdf-fade-out-b"))
+
 (defun defcomp (fields template)
   "
   This should in general not be used by app devs - use the register-component
@@ -397,7 +410,7 @@
                    (chain vnode dom class-list
                           (add
                            ,(if (keywordp anim-out)
-                                (case anim-out (:fade "rdf-fade-out"))
+                                (getf *built-in-out-anim* anim-out)
                                 (first anim-out))))
                    (new (*Promise
                          (lambda (resolve)
@@ -410,7 +423,7 @@
            ,(if anim-in `(chain vnode dom class-list
                                 (add
                                  ,(if (keywordp anim-in)
-                                      (case anim-in (:fade "rdf-fade-in"))
+                                      (getf *built-in-in-anim* anim-in)
                                       anim-in))))
            ,@oncreate)
 

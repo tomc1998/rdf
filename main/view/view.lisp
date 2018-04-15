@@ -55,7 +55,6 @@ mapping routes (strings) to component names (keywords)
               (chain m (route root "/" ,(create-routes routes)))
               (chain m (mount error-flash error-component))
               ))))
-    (log-message* :info "~s" ps-expr)
     (eval ps-expr)))
 
 (defun set-view-routes (routes)

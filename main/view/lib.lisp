@@ -25,23 +25,53 @@ to another page, and navigate to a login page."
    (lambda (s0 s1) (concatenate 'string s0 s1))
    (list
     (lass:compile-and-write
-     '(.rdf-fade-in
-       :animation rdf-fade-in "0.3s" forwards
-       ))
+     '(.rdf-fade-in :animation rdf-fade-in "0.3s" forwards))
     (lass:compile-and-write
-     '(:keyframes "rdf-fade-in"
-       (from :opacity 0)
-       (to :opacity 1)
-       ))
+     '(.rdf-fade-in-l :animation rdf-fade-in "0.3s" forwards \, rdf-from-l "0.3s" forwards))
     (lass:compile-and-write
-     '(.rdf-fade-out
-       :animation rdf-fade-out "0.3s" forwards
-       ))
+     '(.rdf-fade-in-r :animation rdf-fade-in "0.3s" forwards \, rdf-from-r "0.3s" forwards))
     (lass:compile-and-write
-     '(:keyframes "rdf-fade-out"
-       (from :opacity 1)
-       (to :opacity 0)
-       ))
+     '(.rdf-fade-in-t :animation rdf-fade-in "0.3s" forwards \, rdf-from-t "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-in-b :animation rdf-fade-in "0.3s" forwards \, rdf-from-b "0.3s" forwards))
+    (lass:compile-and-write '(:keyframes "rdf-fade-in" (from :opacity 0) (to :opacity 1)))
+    (lass:compile-and-write '(:keyframes "rdf-from-l"
+                              (from :transform translateX "-10%")
+                              (to :transform translateX 0)))
+    (lass:compile-and-write '(:keyframes "rdf-from-r"
+                              (from :transform translateX "10%")
+                              (to :transform translateX 0)))
+    (lass:compile-and-write '(:keyframes "rdf-from-t"
+                              (from :transform translateY "-10%")
+                              (to :transform translateY 0)))
+    (lass:compile-and-write '(:keyframes "rdf-from-b"
+                              (from :transform translateY "10%")
+                              (to :transform translateY 0)))
+    (lass:compile-and-write
+     '(.rdf-fade-out :animation rdf-fade-out "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-out-l :animation rdf-fade-out "0.3s" forwards \, rdf-to-l "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-out-r :animation rdf-fade-out "0.3s" forwards \, rdf-to-r "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-out-t :animation rdf-fade-out "0.3s" forwards \, rdf-to-t "0.3s" forwards))
+    (lass:compile-and-write
+     '(.rdf-fade-out-b :animation rdf-fade-out "0.3s" forwards \, rdf-to-b "0.3s" forwards))
+
+    (lass:compile-and-write '(:keyframes "rdf-fade-out" (from :opacity 1) (to :opacity 0)))
+    (lass:compile-and-write '(:keyframes "rdf-to-l"
+                              (from :transform translateX 0)
+                              (to :transform translateX "-10%")))
+    (lass:compile-and-write '(:keyframes "rdf-to-r"
+                              (from :transform translateX 0)
+                              (to :transform translateX "10%")))
+    (lass:compile-and-write '(:keyframes "rdf-to-t"
+                              (from :transform translateY 0)
+                              (to :transform translateY "-10%")))
+    (lass:compile-and-write '(:keyframes "rdf-to-b"
+                              (from :transform translateY 0)
+                              (to :transform translateY "10%")))
+
     )))
 
 (defun render-lib-js ()
