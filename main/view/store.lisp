@@ -1,5 +1,6 @@
 (in-package :rdf)
 
+(defparameter *init-state* ())
 (defparameter *store-computed* ())
 (defparameter *store-actions* ())
 

@@ -2,9 +2,7 @@
 
 (defvar *server-ref* nil)
 
-(defparameter *comp-list* ())
 (defparameter *routes* ())
-(defparameter *init-state* ())
 (defparameter *lass-styles* ())
 
 (defparameter *default-error-component* (defcomp () '(div {!store.rdf-app-error})))
