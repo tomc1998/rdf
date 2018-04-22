@@ -13,6 +13,11 @@
            :add-additional-script-url
            :clear-additional-scripts
 
+           ;; Auth system
+           user-info
+           user-auth
+           setup-auth
+
            ;; Request stuff
            :define-app-req
            :define-file-handler
@@ -85,6 +90,7 @@
                (:file "main/view/component" :depends-on ("main/view/template"
                                                          "main/view/control-cons"))
                (:file "main/view/control-cons" :depends-on ("main/view/template"))
+               (:file "main/auth/auth")
                (:file "main/main"
                       :depends-on ("main/json-ser"
                                    "main/json-deser"
