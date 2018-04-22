@@ -172,7 +172,7 @@
      (lambda (res) (loop for c in res do (setf (@ {!store.comments} (@ c id)) c)))))
   (rdf:add-store-action
    'add-comment '(todo-id comment)
-   '(app-req "/add-comment" (create body (@ comment body) parent-todo-id todo-id)
+   '(app-req "/add-comment" (create body (@ comment body) rdf::parent-todo-id todo-id)
      (lambda (res) (rdf:dispatch-action fetch-comments (array todo-id)))))
   (rdf:register-component
    'view-todo-modal
@@ -283,7 +283,7 @@
                           '(let ((comments (array)))
                             (for-in (comment-id {!store.comments})
                              (let ((comment (@ {!store.comments} (progn comment-id))))
-                               (if (= (@ comment parent-todo-id) {!store.showing-todo-modal.id})
+                               (if (= (@ comment rdf::parent-todo-id) {!store.showing-todo-modal.id})
                                    (chain comments (push comment)))))
                             comments))
   (rdf:add-store-computed 'todos-done '(loop for todo in {!store.todos}
@@ -331,42 +331,42 @@
 
   (rdf:define-app-req "/add-todo" (todo)
     (lambda (todo)
-      (setf (slot-value todo 'parent-user-auth-id) (rdf:session-value 'user-id))
+      (setf (slot-value todo 'rdf::parent-user-auth-id) (rdf:session-value 'user-id))
       (rdf:insert-one todo)) :require-auth t)
   (rdf:define-app-req "/get-todos" ()
     (lambda ()
       ;; Select all todos belonging to this user
       (let ((tree (rdf:select-tree
                    '(todo) :where `(= ,(rdf:session-value 'user-id)
-                                      (todo parent-user-auth-id)))))
+                                      (todo rdf::parent-user-auth-id)))))
         (mapcar #'car tree)))
     :require-auth t)
   (rdf:define-app-req "/set-done" (todo)
-    (lambda (todo) (if (rdf:check-owner-eq todo 'parent-user-auth-id (rdf:session-value 'user-id))
+    (lambda (todo) (if (rdf:check-owner-eq todo 'rdf::parent-user-auth-id (rdf:session-value 'user-id))
                        (rdf:update-entity todo 'done)) ()) :require-auth t)
   (rdf:define-app-req "/delete-todo" (todo)
-    (lambda (todo) (if (rdf:check-owner-eq todo 'parent-user-auth-id (rdf:session-value 'user-id))
+    (lambda (todo) (if (rdf:check-owner-eq todo 'rdf::parent-user-auth-id (rdf:session-value 'user-id))
                        (rdf:delete-entity todo)) ()) :require-auth t)
   (rdf:define-app-req "/delete-all-todos" ((todo))
     (lambda (todos) (loop for todo in todos do
-                         (if (rdf:check-owner-eq todo 'parent-user-auth-id (rdf:session-value 'user-id))
+                         (if (rdf:check-owner-eq todo 'rdf::parent-user-auth-id (rdf:session-value 'user-id))
                              (rdf:delete-entity todo))) ()) :require-auth t)
   (rdf:define-app-req "/edit-todo" (todo)
-    (lambda (todo) (if (rdf:check-owner-eq todo 'parent-user-auth-id (rdf:session-value 'user-id))
+    (lambda (todo) (if (rdf:check-owner-eq todo 'rdf::parent-user-auth-id (rdf:session-value 'user-id))
                        (rdf:update-entity todo 'body)) ()) :require-auth t)
   (rdf:define-app-req "/add-comment" (comment)
     (lambda (comment) (if (rdf:check-owner-eq
-                           (make-instance 'todo :id (slot-value comment 'parent-todo-id))
-                           'parent-user-auth-id (rdf:session-value 'user-id))
+                           (make-instance 'todo :id (slot-value comment 'rdf::parent-todo-id))
+                           'rdf::parent-user-auth-id (rdf:session-value 'user-id))
                           ;; Set the author ID
-                          (progn (setf (slot-value comment 'parent-user-auth-id)
+                          (progn (setf (slot-value comment 'rdf::parent-user-auth-id)
                                        (rdf:session-value 'user-id))
                                  ;; Insert the comment
                                  (rdf:insert-one comment))) ()) :require-auth t)
   (rdf:define-app-req "/get-comments" (nil)
     (lambda (todo-id)
       (let ((tree (rdf:select-tree '(comment) :where
-                                   `(= ,todo-id (comment parent-todo-id)))))
+                                   `(= ,todo-id (comment rdf::parent-todo-id)))))
         (mapcar #'car tree))) :require-auth t)
   )
 

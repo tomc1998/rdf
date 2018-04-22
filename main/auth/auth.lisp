@@ -1,6 +1,44 @@
 (in-package :rdf)
 
-(defmacro setup-auth (fields &key auth-types override)
+(defun setup-auth-login-endpoint ()
+  `(define-app-req "/rdf/login" (user-auth)
+     (lambda (user-auth)
+       (let ((users (select-tree '(user-auth ()) :where
+                                     `(= (user-auth email) ,(slot-value user-auth 'email)))))
+         (if (not users) (raise-app-error "Incorrect email or password" 400))
+         (let ((pwd-hash (slot-value (caar users) 'pass)))
+           (if (not (check-pwd (slot-value user-auth 'pass) pwd-hash))
+               (raise-app-error "Incorrect email or password" 400)))
+         (setf (session-value 'user-id) (slot-value (caar users) 'id))
+         (slot-value (caar users) 'id))))
+  )
+
+(defun setup-auth-register-endpoint ()
+  `(rdf:define-app-req "/rdf/register" (user-auth user-info)
+     (lambda (user-auth user-info)
+       (setf (slot-value user-auth 'pass) (rdf:hash-pwd (slot-value user-auth 'pass)))
+       ;; Insert both user auth and info
+       (handler-case (progn
+                       (setf (slot-value user-auth 'id) (rdf:insert-one user-auth))
+                       (log-message* :INFO "~a" (slot-value user-auth 'id))
+                       (let ((info-id (rdf:insert-one user-info)))
+                              (setf (slot-value user-auth 'parent-user-info-id) info-id)
+                              (rdf:update-entity user-auth 'parent-user-info-id))
+                       nil)
+         (rdf:insert-duplicate-error () (rdf:raise-app-error "Email taken" 400)))))
+  )
+
+(defun setup-auth-entities (fields &key override)
+  "Called from setup-auth, sets up the database entities for the auth system"
+  `(progn
+     (defentity user-info ,fields :override ,override)
+     ;; Just assume email-password auth for the moment
+     (defentity user-auth
+         ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null))
+       :parents (user-info) :override ,override)))
+
+
+(defun setup-auth (fields &key auth-types override)
   "Setup the RDF automatic authorisation system. This adds the 'rdf:user-auth'
   and 'rdf:user-info' tables, according to the given spec. These entities can be
   accessed with the exported rdf:user-info and rdf:user-auth symbols.
@@ -20,7 +58,6 @@
 
   If no additional data was specified, the user-info entity is still created,
   but it only contains an ID.
-
 
   # Params
   - override
@@ -52,9 +89,9 @@
 - :email-password" (car auth-types)))
   (if (> (length auth-types) 1) (error "WARNING: setup-auth only supports 1
   authorization type, you entered two."))
-  `(progn
-     (defentity user-info ,fields :override ,override)
-     ;; Just assume email-password auth for the moment
-     (defentity user-auth
-         ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null))
-       :parents (user-info) :override ,override)))
+  (eval `(progn
+           ,(setup-auth-entities fields :override override)
+           ,(setup-auth-register-endpoint)
+           ,(setup-auth-login-endpoint)
+           ))
+  )

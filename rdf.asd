@@ -65,6 +65,10 @@
   (:use "PARENSCRIPT" "COMMON-LISP")
   (:export :main))
 
+(defpackage :rdf-auth-example
+  (:use "PARENSCRIPT" "COMMON-LISP")
+  (:export :main))
+
 (defpackage :rdf-bs-example
   (:use "PARENSCRIPT" "COMMON-LISP")
   (:export :main))
@@ -122,3 +126,8 @@
   :author "Tom <thomascheng1998@gmail.com>"
   :depends-on (:rdf :bootstrap :parenscript)
   :components ((:file "examples/todo/main")))
+
+(asdf:defsystem rdf-auth-example
+  :author "Tom <thomascheng1998@gmail.com>"
+  :depends-on (:rdf :parenscript)
+  :components ((:file "examples/auth/main")))
