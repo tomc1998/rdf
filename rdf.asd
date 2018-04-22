@@ -1,13 +1,3 @@
-(ql:quickload :prove)
-(ql:quickload :str)
-(ql:quickload :hunchentoot)
-(ql:quickload :cl-json)
-(ql:quickload :parenscript)
-(ql:quickload :ironclad)
-(ql:quickload :flexi-streams)
-(ql:quickload :lass)
-(ql:quickload :corm)
-
 (defpackage :rdf
   (:use  "PARENSCRIPT" "COMMON-LISP")
   (:shadowing-import-from :corm :entity-already-exists :select-tree
@@ -80,7 +70,7 @@
 
 (asdf:defsystem rdf
   :description "A rapid development web framework"
-  :depends-on (:corm :hunchentoot :cl-json :parenscript :str :ironclad :flexi-streams :lass)
+  :depends-on (:corm :hunchentoot :cl-json :parenscript :str :ironclad :flexi-streams :lass :cl-smtp)
   :components ((:file "main/json-ser")
                (:file "main/json-deser")
                (:file "main/entity")
