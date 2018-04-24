@@ -4,14 +4,14 @@
                           :insert-one :id :insert-duplicate-error :update-entity
                           :delete-entity :delete-all :check-owner-eq)
   (:shadowing-import-from :hunchentoot :session-value :log-message*)
-  (:export :rdf-start
-           :rdf-stop
-           :*server-ref*
-           :*verify-auth*
-           :add-additional-stylesheet-url
-           :clear-additional-stylesheets
-           :add-additional-script-url
-           :clear-additional-scripts
+  (:export rdf-start
+           rdf-stop
+           *server-ref*
+           *verify-auth*
+           add-additional-stylesheet-url
+           clear-additional-stylesheets
+           add-additional-script-url
+           clear-additional-scripts
 
            ;; Auth system
            user-info
@@ -19,46 +19,50 @@
            setup-auth
 
            ;; Request stuff
-           :define-app-req
-           :define-file-handler
-           :app-req-error
-           :raise-app-error
+           define-app-req
+           define-file-handler
+           app-req-error
+           raise-app-error
 
            ;; View (i.e. client) stuff
-           :defcomp
-           :register-component
-           :set-view-routes
-           :add-initial-store-state
-           :add-store-action
-           :add-store-computed
-           :dispatch-action
-           :entity-to-json
-           :entity-from-json
-           :set-client-default-unauthorized-behaviour
-           :*error-component*
+           defcomp
+           register-component
+           set-view-routes
+           add-initial-store-state
+           add-store-action
+           add-store-computed
+           dispatch-action
+           entity-to-json
+           entity-from-json
+           set-client-default-unauthorized-behaviour
+           *error-component*
            ;; View styling
-           :register-lass 
-           :clear-lass
+           register-lass 
+           clear-lass
+
+           ;; Auto-gen view stuff
+           gen-form
+           *gen-form-func*
 
            ;; Corm re-exports
-           :defentity ; Not actually a re-export - see entity.lisp
-           :entity-already-exists
-           :select-tree
-           :insert-one
-           :insert-duplicate-error
-           :update-entity
-           :delete-entity
-           :delete-all
-           :check-owner-eq
-           :id
+           defentity ; Not actually a re-export - see entity.lisp
+           entity-already-exists
+           select-tree
+           insert-one
+           insert-duplicate-error
+           update-entity
+           delete-entity
+           delete-all
+           check-owner-eq
+           id
 
            ;; Hunchentoot session re-exports
-           :session-value
-           :log-message*
+           session-value
+           log-message*
 
            ;; Re-export ironclad hash password & flexi stream functions
-           :hash-pwd
-           :check-pwd
+           hash-pwd
+           check-pwd
            ))
 
 (defpackage :rdf-full-example
@@ -94,6 +98,7 @@
                (:file "main/view/component" :depends-on ("main/view/template"
                                                          "main/view/control-cons"))
                (:file "main/view/control-cons" :depends-on ("main/view/template"))
+               (:file "main/view/auto/form")
                (:file "main/auth/auth")
                (:file "main/main"
                       :depends-on ("main/json-ser"
