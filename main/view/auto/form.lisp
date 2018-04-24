@@ -44,12 +44,13 @@
   of the form.
 
   # Example
-  (gen-form 'login-form '(
-    ((first-name \"First name\")
+  (rdf:gen-form
+   'login-form
+   '(((first-name \"First name\")
       (last-name \"Last name\"))
-    ((email \"Email\" :placeholder \"Enter your email here\" :type \"email\"))
-    ((password \"Password\" :placeholder \"Enter your password here\" :type \"password\")))
-    (chain console (log obj)))
+     ((email \"Email\" :placeholder \"Enter your email here\" :type \"email\"))
+     ((password \"Password\" :placeholder \"Enter your password here\" :type \"password\")))
+   '(chain console (log obj)))
 
   This example generates a form which takes a first name, last name, email, and
   password. When the form is submitted, it called console.log(obj), where 'obj'
