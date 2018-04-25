@@ -134,5 +134,5 @@
 
 (asdf:defsystem rdf-auth-example
   :author "Tom <thomascheng1998@gmail.com>"
-  :depends-on (:rdf :parenscript)
+  :depends-on (:rdf :bootstrap :parenscript)
   :components ((:file "examples/auth/main")))

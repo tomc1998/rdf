@@ -1,6 +1,6 @@
 (defpackage :bs
   (:use "PARENSCRIPT" "COMMON-LISP")
-  (:export :load-all :gen-form))
+  (:export :load-all))
 
 (asdf:defsystem bootstrap
   :description "A bootstrap component library for rdf"
