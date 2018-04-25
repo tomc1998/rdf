@@ -1,5 +1,8 @@
 (in-package :rdf)
 
+(defvar *auto-login-form-callback* '(lambda ()))
+(defvar *auto-reg-form-callback* '(lambda ()))
+
 (defun kebab-to-readable (s)
   "Returns a human readable string of the given kebab-case string"
   (let* ((words-raw (str:split "-" s))
@@ -12,9 +15,9 @@
   email-pwd auth."
   (gen-form
    'auto-login-form
-   `(((email "Email" :type "email" placeholder "Enter your email here"))
-     ((password "Password" :type "password" placeholder "Enter your  here")))
-   '(app-req "/rdf/login" obj)
+   `(((email "Email" :required t :type "email" placeholder "Enter your email here"))
+     ((password "Password" :required t :type "password" placeholder "Enter your  here")))
+   `(app-req "/rdf/login" obj ,*auto-login-form-callback*)
    ))
 
 (defun gen-reg-form (fields)
@@ -23,10 +26,10 @@
   (gen-form
    'auto-reg-form
    `(,@(loop for f in fields
-          collect (list (list (car f) (kebab-to-readable (string (car f))))))
-       ((email "Email" :type "email" placeholder "Enter your email here"))
-       ((password "Password" :type "password" placeholder "Enter your password here"))
-       ((confirm-password "Confirm Password" :type "password" placeholder "Enter your password again"))
+          collect (list (list (car f) (kebab-to-readable (string (car f))) :required t)))
+       ((email "Email" :required t :type "email" placeholder "Enter your email here"))
+       ((password "Password" :required t :type "password" placeholder "Enter your password here"))
+       ((confirm-password "Confirm Password" :required t :type "password" placeholder "Enter your password again"))
        )
-   '(app-req "/rdf/register" obj)
+   `(app-req "/rdf/register" obj ,*auto-reg-form-callback*)
    ))

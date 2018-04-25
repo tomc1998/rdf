@@ -19,6 +19,8 @@
            setup-auth
            auto-login-form
            auto-reg-form
+           *auto-login-form-callback*
+           *auto-reg-form-callback*
 
            ;; Request stuff
            define-app-req

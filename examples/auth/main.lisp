@@ -8,6 +8,9 @@
   (rdf:setup-auth '((first-name "VARCHAR(256)") (last-name "VARCHAR(256)"))
                   :auth-types '(:email-password) :override t)
 
+  (setf rdf:*auto-login-form-callback* '(lambda () (chain console (log "Hello Login"))))
+  (setf rdf:*auto-reg-form-callback* '(lambda () (chain console (log "Hello Reg"))))
+
   (rdf:register-component
    'home '(:methods
            ((register () (app-req "/rdf/register" (array
