@@ -1,6 +1,8 @@
 (in-package :rdf-auth-example)
 
 (defun main ()
+  (rdf:clear-additional-stylesheets)
+  (rdf:clear-additional-scripts)
   (bs:load-all)
 
   (rdf:setup-auth '((first-name "VARCHAR(256)") (last-name "VARCHAR(256)"))
