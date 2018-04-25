@@ -17,6 +17,8 @@
            user-info
            user-auth
            setup-auth
+           auto-login-form
+           auto-reg-form
 
            ;; Request stuff
            define-app-req
@@ -99,7 +101,8 @@
                                                          "main/view/control-cons"))
                (:file "main/view/control-cons" :depends-on ("main/view/template"))
                (:file "main/view/auto/form")
-               (:file "main/auth/auth")
+               (:file "main/auth/auth" :depends-on ("main/auth/form-gen"))
+               (:file "main/auth/form-gen")
                (:file "main/main"
                       :depends-on ("main/json-ser"
                                    "main/json-deser"
@@ -115,7 +118,10 @@
                (:test-file "test/entity")
                (:test-file "test/view/view")
                (:test-file "test/view/control-cons")
-               (:test-file "test/view/component")))
+               (:test-file "test/view/component")
+               (:test-file "test/auth/auth")
+               (:test-file "test/auth/form-gen")
+               ))
 
 (asdf:defsystem rdf-full-example
   :author "Tom <thomascheng1998@gmail.com>"

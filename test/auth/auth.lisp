@@ -1,5 +1,4 @@
 (prove:plan 1)
-(print *package*)
 
 (rdf:setup-auth '((first-name "VARCHAR(256)") (last-name "VARCHAR(256)"))
                 :auth-types '(:email-password) :override t)

@@ -94,4 +94,5 @@
            ,(setup-auth-register-endpoint)
            ,(setup-auth-login-endpoint)
            ))
-  )
+  (gen-login-form fields)
+  (gen-reg-form fields))

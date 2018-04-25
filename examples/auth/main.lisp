@@ -6,16 +6,6 @@
   (rdf:setup-auth '((first-name "VARCHAR(256)") (last-name "VARCHAR(256)"))
                   :auth-types '(:email-password) :override t)
 
-  (rdf:gen-form
-   'login-form
-   '(((first-name "First name" :maxLength 32 :required t)
-      (last-name "Last name" :maxLength 32 :required t))
-     ((email "Email" :required t
-       :placeholder "Enter your email here" :type "email"))
-     ((password "Password (min. 8 characters)" :pattern ".{8,}" :required t
-       :placeholder "Enter your password here" :type "password")))
-   '(chain console (log obj)))
-
   (rdf:register-component
    'home '(:methods
            ((register () (app-req "/rdf/register" (array
@@ -23,11 +13,11 @@
                                                    (create first-name "asd" last-name "asd"))))
             (login () (app-req "/rdf/login" (create email "asd" password "asd")))))
    '(.container
-     (.row.justify-content-center (.col-sm-12.col-md-8.col-lg-6 login-form))
-     ((button onclick {@register}) "Try register")
-     ((button onclick {@login}) "Try login")
-     )
-   )
+     (h1 "Register")
+     (.row.justify-content-center (.col-sm-12.col-md-8.col-lg-6 rdf:auto-reg-form))
+     (h1 "Login")
+     (.row.justify-content-center (.col-sm-12.col-md-8.col-lg-6 rdf:auto-login-form))
+     ))
 
   (rdf:set-view-routes '(("/" home)))
 
