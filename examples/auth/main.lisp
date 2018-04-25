@@ -6,10 +6,12 @@
 
   (rdf:gen-form
    'login-form
-   '(((first-name "First name")
-      (last-name "Last name"))
-     ((email "Email" :placeholder "Enter your email here" :type "email"))
-     ((password "Password" :placeholder "Enter your password here" :type "password")))
+   '(((first-name "First name" :maxLength 32 :required t)
+      (last-name "Last name" :maxLength 32 :required t))
+     ((email "Email" :required t
+       :placeholder "Enter your email here" :type "email"))
+     ((password "Password (min. 8 characters)" :pattern ".{8,}" :required t
+       :placeholder "Enter your password here" :type "password")))
    '(chain console (log obj)))
 
   (rdf:register-component

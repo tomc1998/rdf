@@ -1,5 +1,5 @@
 (in-package :rdf)
-(defvar *gen-form-func*
+(defparameter *gen-form-func*
   (lambda (name input-groups &rest callback)
     (eval
      `(rdf:register-component
@@ -12,20 +12,17 @@
                 `(fieldset
                   ,@(loop for (name label . options) in i-group do
                        ;; Error handle just for convenience
-                         (print name)
-                         (print label)
-                         (print options)
                          (if (not name) (error "No input name in gen-form"))
                          (if (not label) (error "No input label in gen-form"))
                          (if (oddp (length options))
                              (error "gen-form input options should be plist (length is odd)"))
                        append
-                         (let ((type (getf options :type))
-                               (placeholder (getf options :placeholder))
+                         (let ((attribs (loop for (k v) on options by #'cddr append
+                                             (list (intern (string k)) v)))
                                (model (intern (format nil "{OBJ.~a}" (string-upcase name)))))
-                           `(,(if label `((label for ,(string name)) ,label))
-                              ((input type ,(if type type "text") id ,(string name)
-                                      placeholder ,(if placeholder placeholder "") (!model ,model))))))))
+                           `(,(if label `(!array ((label for ,(string name)) ,label) (br)))
+                              ((input ,@attribs id ,(string name) (!model ,model)))
+                              (br))))))
          ((button class "btn btn-primary" type "submit") "Submit")))))
   )
 
@@ -33,11 +30,15 @@
   "Registers a component with the given symbol, given the input groups.
   input-groups is a list, where each item is a list containing an input. An input is a list of the following format:
 
-  (id label &key placeholder type)
+  (id label . options)
 
   The ID is the unique name of the field. When the form is filled in, this data
   will be extracted into a variable of this name.
-  Label, placeholder & type match the attributes for <input>s.
+  Label is the text used to label the input.
+  Options is a plist of input attributes. Here is a full input example:
+  (email \"Email\" :type \"text\" :placeholder \"Please enter your email here\")
+  Options can also be used for the html5 form validation:
+  (age \"Age\" :type \"number\" :required t :max 130)
 
   The callback forms are a list of parenscript expressions which are run when
   the form is submitted. The 'obj' variable is in scope, and contains the inputs
