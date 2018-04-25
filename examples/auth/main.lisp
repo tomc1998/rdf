@@ -22,8 +22,8 @@
                                                    (create email "asd" password "asd")
                                                    (create first-name "asd" last-name "asd"))))
             (login () (app-req "/rdf/login" (create email "asd" password "asd")))))
-   '(div
-     login-form
+   '(.container
+     (.row.justify-content-center (.col-sm-12.col-md-8.col-lg-6 login-form))
      ((button onclick {@register}) "Try register")
      ((button onclick {@login}) "Try login")
      )

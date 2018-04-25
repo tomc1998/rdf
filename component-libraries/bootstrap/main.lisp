@@ -30,19 +30,21 @@
                                    (loop for i in i-group append (list (car i) ""))))))
        :methods ((onsubmit () (progn (var obj {obj}) ,@callback))))
      '((form onsubmit {@onsubmit})
-       ,@ (loop for i-group in input-groups collect
-               `(div.form-group
-                 ,@(loop for (name label . options) in i-group do
-                      ;; Error handle just for convenience
-                        (if (not name) (error "No input name in gen-form"))
-                        (if (oddp (length options))
-                            (error "gen-form input options should be plist (length is odd)"))
-                      append
-                        (let ((attribs (loop for (k v) on options by #'cddr append
-                                            (list (intern (string k)) v)))
-                              (model (intern (format nil "{OBJ.~a}" (string-upcase name)))))
-                          `(,(if label `((label for ,(string name)) ,label))
-                             ((input.form-control ,@attribs id ,(string name) (!model ,model))))))))
+       ,@ (loop for i-group in input-groups append
+               `((form-group
+                  ,@(loop for (name label . options) in i-group do
+                       ;; Error handle just for convenience
+                         (if (not name) (error "No input name in gen-form"))
+                         (if (oddp (length options))
+                             (error "gen-form input options should be plist (length is odd)"))
+                       append
+                         (let ((attribs (loop for (k v) on options by #'cddr append
+                                             (list (intern (string k)) v)))
+                               (model (intern (format nil "{OBJ.~a}" (string-upcase name)))))
+                           `(,(if label `((label for ,(string name)) ,label))
+                              ((input.form-control ,@attribs id ,(string name) (!model ,model)))))))
+                 (.my-1)))
+       (.my-2)
        ((button class "btn btn-primary" type "submit") "Submit")))))
 
 (defun load-all ()
