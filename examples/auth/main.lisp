@@ -12,11 +12,7 @@
   (setf rdf:*auto-reg-form-callback* '(lambda () (chain console (log "Hello Reg"))))
 
   (rdf:register-component
-   'home '(:methods
-           ((register () (app-req "/rdf/register" (array
-                                                   (create email "asd" password "asd")
-                                                   (create first-name "asd" last-name "asd"))))
-            (login () (app-req "/rdf/login" (create email "asd" password "asd")))))
+   'home ()
    '(.container
      (h1 "Register")
      (.row.justify-content-center (.col-sm-12.col-md-8.col-lg-6 rdf:auto-reg-form))

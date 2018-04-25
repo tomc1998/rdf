@@ -31,5 +31,5 @@
        ((password "Password" :required t :type "password" placeholder "Enter your password here"))
        ((confirm-password "Confirm Password" :required t :type "password" placeholder "Enter your password again"))
        )
-   `(app-req "/rdf/register" obj ,*auto-reg-form-callback*)
+   `(app-req "/rdf/register" (array obj obj) ,*auto-reg-form-callback*)
    ))
