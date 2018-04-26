@@ -148,29 +148,34 @@ to another page, and navigate to a login page."
                               extract (lambda (res) res)
                               data params-obj)
                              ))))
-                (chain
+                (setf
                  req
-                 (then
-                  (lambda (res)
-                    (callback (chain *json* (parse (@ res response-text))) (@ res status)))))
-                (chain
+                 (chain
+                  req
+                  (then
+                   (lambda (res)
+                     (callback (chain *json* (parse (@ res response-text))) (@ res status))))))
+                (setf
                  req
-                 (catch
-                     (lambda (res)
-                       (chain console (log res))
-                       (try
-                        (var parsed (chain *json* (parse (@ res response-text))))
-                        (:catch (e)
-                          ;; If there was an error with JSON parsing the error,
-                          ;; just set parsed to a generic error message,
-                          ;; there's nothing we can do here.
-                          (setf parsed (create :error "An unknown error has occurred."))
-                          ))
-                       (if error-callback
-                           (error-callback parsed (@ res status))
-                           (progn
-                             (if (= (@ res status) 401)
-                                 ,client-default-unauthorised-behaviour
-                                 (setf (@ window store rdf-app-error) (@ parsed error)))))
-                       ))))))
+                 (chain
+                  req
+                  (catch
+                      (lambda (res)
+                        (chain console (log res))
+                        (try
+                         (var parsed (chain *json* (parse (@ res response-text))))
+                         (:catch (e)
+                           ;; If there was an error with JSON parsing the error,
+                           ;; just set parsed to a generic error message,
+                           ;; there's nothing we can do here.
+                           (setf parsed (create :error "An unknown error has occurred."))
+                           ))
+                        (if error-callback
+                            (error-callback parsed (@ res status))
+                            (progn
+                              (if (= (@ res status) 401)
+                                  ,client-default-unauthorised-behaviour
+                                  (setf (@ window store rdf-app-error) (@ parsed error)))))
+                        ))))
+                req)))
           ))))
