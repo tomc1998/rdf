@@ -8,10 +8,9 @@
            rdf-stop
            *server-ref*
            *verify-auth*
-           add-additional-stylesheet-url
-           clear-additional-stylesheets
-           add-additional-script-url
-           clear-additional-scripts
+
+           ;; Config shit
+           *base-url*
 
            ;; Auth system
            user-info
@@ -21,6 +20,13 @@
            auto-reg-form
            *auto-login-form-callback*
            *auto-reg-form-callback*
+
+           ;; Emails
+           send-email
+           *smtp-server*
+           *smtp-port*
+           *smtp-auth*
+           *email-domain*
 
            ;; Request stuff
            define-app-req
@@ -43,6 +49,11 @@
            ;; View styling
            register-lass 
            clear-lass
+           ;; External view stuff
+           add-additional-stylesheet-url
+           clear-additional-stylesheets
+           add-additional-script-url
+           clear-additional-scripts
 
            ;; Auto-gen view stuff
            gen-form
@@ -85,6 +96,10 @@
   (:use "PARENSCRIPT" "COMMON-LISP")
   (:export :main))
 
+(defpackage :rdf-email-example
+  (:use "PARENSCRIPT" "COMMON-LISP")
+  (:export :main))
+
 (asdf:defsystem rdf
   :description "A rapid development web framework"
   :depends-on (:corm :hunchentoot :cl-json :parenscript :str :ironclad :flexi-streams :lass :cl-smtp)
@@ -105,6 +120,8 @@
                (:file "main/view/auto/form")
                (:file "main/auth/auth" :depends-on ("main/auth/form-gen"))
                (:file "main/auth/form-gen")
+               (:file "main/email" :depends-on ("main/config"))
+               (:file "main/config")
                (:file "main/main"
                       :depends-on ("main/json-ser"
                                    "main/json-deser"
@@ -144,3 +161,8 @@
   :author "Tom <thomascheng1998@gmail.com>"
   :depends-on (:rdf :bootstrap :parenscript)
   :components ((:file "examples/auth/main")))
+
+(asdf:defsystem rdf-email-example
+  :author "Tom <thomascheng1998@gmail.com>"
+  :depends-on (:rdf :bootstrap :parenscript)
+  :components ((:file "examples/email/main")))

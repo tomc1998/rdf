@@ -2,7 +2,7 @@
 
 (defvar *server-ref* nil)
 (defvar *verify-auth* (lambda (type) (declare (ignore type))
-                              (error 'error "No *verify-auth* function defined")))
+                              (rdf:session-value 'user-id)))
 (defvar *additional-stylesheet-urls* ())
 (defvar *additional-script-urls* ())
 
