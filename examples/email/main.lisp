@@ -14,8 +14,9 @@
                   :auth-types '(:email-password) :override t)
 
   (rdf:define-app-req "/email" ()
-    (lambda () (rdf:send-email
-                "my-email@mail.com"
+    (lambda () (rdf:send-email-to-user
+                (rdf:session-value 'rdf:user-id
+                                   )
                 "Some email subject"
                 "Hello, this is an email")) :require-auth t)
 

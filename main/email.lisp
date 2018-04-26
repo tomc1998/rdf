@@ -10,9 +10,6 @@
 
 (defun send-email (addr subject body &key from html-message)
   "Send an email to the given email address."
-  (log-message* :INFO *smtp-server*)
-  (log-message* :INFO *smtp-auth*)
-  (log-message* :INFO "~a" *smtp-port*)
   (cl-smtp:send-email
    *smtp-server*
    (format nil "~a@~a"
@@ -25,3 +22,15 @@
    :html-message html-message
    :authentication *smtp-auth*
    ))
+
+(defun send-email-to-user (id subject body &key from html-message)
+  "Send an email to the email address of the given user ID. This fetches the
+email from the database first, and assumes an auto-auth system is used, and that
+email / password is used as an authentication option."
+  (let ((users (select-tree '(user-auth)
+                            :where `(= ,id (user-auth parent-user-info-id))))
+        )
+    (if (= (length users) 0) (error "Trying to send email to user with id ~a,
+    but user email was not found. Check the user_auth table!" id))
+    (send-email (slot-value (caar users) 'email) subject body
+                :from from :html-message html-message)))

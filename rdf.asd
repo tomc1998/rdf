@@ -13,6 +13,7 @@
            *base-url*
 
            ;; Auth system
+           user-id
            user-info
            user-auth
            setup-auth
@@ -23,6 +24,7 @@
 
            ;; Emails
            send-email
+           send-email-to-user
            *smtp-server*
            *smtp-port*
            *smtp-auth*
