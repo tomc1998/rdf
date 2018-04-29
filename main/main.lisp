@@ -21,7 +21,7 @@
   (ironclad:pbkdf2-check-password (flexi-streams:string-to-octets pwd) combined-salt-and-digest))
 (setf (fdefinition 'string-to-octets) #'flexi-streams:string-to-octets)
 
-(defun setup-view-routes ()
+(defun setup-view-routes (&key (static-folder-path "static/"))
   (hunchentoot:define-easy-handler (index :uri "/" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "text/html")
     (format nil "<html>
@@ -55,11 +55,29 @@
   (hunchentoot:define-easy-handler (lib-js :uri "/rdf/lib.js" :default-request-type :GET) ()
     (setf (hunchentoot:content-type*) "application/javascript")
     (render-lib-js))
-  (define-file-handler "/rdf/mithril.js" (asdf:system-relative-pathname :rdf "lib/mithril.js"))
+  (define-file-handler "/rdf/mithril.js"
+      (asdf:system-relative-pathname :rdf "lib/mithril.js"))
+  (push (hunchentoot:create-folder-dispatcher-and-handler
+         "/static/" static-folder-path) hunchentoot:*dispatch-table*)
   )
 
-(defun rdf-start (port)
-  (setup-view-routes)
+(defun rdf-start (&key
+                    (port 4242)
+                    (static-folder-path "static/")
+                    (base-url "localhost:4242"))
+  "Start the server.
+  # Params
+    * port - The port to start the server on. Defaults to 4242.
+    * base-url - This is the base URL. If this server is behind a domain name,
+      this should be a domain name. This will be used when generating links to
+      this server - for example, when generating a one time use link for a
+      verification email. Defaults to localhost:4242. Shouldn't end with a '/'.
+    * static-folder-path - The path to serve static files from. Defaults to
+      'static/'. Consider using asdf:system-relative-pathname.
+  "
+  (setf *base-url* base-url)
+  (setf *static-folder-path* static-folder-path)
+  (setup-view-routes :static-folder-path static-folder-path)
   (if (and *server-ref* (hunchentoot:started-p *server-ref*)) nil
       (progn (setf *server-ref* (make-instance 'hunchentoot:easy-acceptor :port port))
              (hunchentoot:start *server-ref*))))

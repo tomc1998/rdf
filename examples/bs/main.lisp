@@ -43,5 +43,5 @@
 
   ;; Start the server
   (rdf:rdf-stop)
-  (rdf:rdf-start 4242)
+  (rdf:rdf-start :port 4242)
   )
