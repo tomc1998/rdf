@@ -65,10 +65,20 @@
        ;; inside a lambda accepting the event
        (setf root-interpolation (get-root-interpolation-symbol (remove #\@ (string template))))
        (let ((expanded (getf symbol-table root-interpolation)))
-         (if expanded (setf final-expansion
-                                              (add-chain-from-interpolation-symbol
-                                               `(! (lambda (e) (,expanded vnode e))) template))
-                   (setf final-expansion template))))
+         (if expanded
+             (setf
+              final-expansion
+              (add-chain-from-interpolation-symbol
+               `(! (lambda (e)
+                     (chain ,expanded
+                            (apply null
+                                   (chain
+                                    (array vnode)
+                                    (concat
+                                     (chain *array prototype
+                                            slice (call arguments))))))))
+               template))
+             (setf final-expansion template))))
       ;; If we're not an event listener symbol, we might just be a normal
       ;; interpolation - check for this
       ((typep template 'symbol)
