@@ -386,11 +386,23 @@
          (oninit (mapcar (lambda (a) (expand-all-ps-injects (expand-interpolations a fields)))
                          (cdr (assoc 'oninit lifecycle :test
                                      (lambda (s0 s1) (string= (string s0) (string s1)))))))
-         ;; Build state declarations of attrs for parenscript (these will go in the oninit method)
-         (attr-state-decl (loop for (a default) in attrs collect
-                               `(setf (@ vnode state ,a)
-                                      ;; If attr defined, use that - otherwise, use the default
-                                      (if (@ vnode attrs ,a) (@ vnode attrs ,a) ,default))))
+         ;; Build state declarations of attrs for parenscript (these will go in
+         ;; the oninit method)
+         (oninit-attr-state-decl
+          (loop for (a default) in attrs collect
+               `(setf (@ vnode state ,a)
+                      ;; If attr defined, use that - otherwise, use the default
+                      (if (@ vnode attrs ,a) (@ vnode attrs ,a) ,default))))
+         ;; State decls for in the beforeupdate function. These differ from the
+         ;; oninit attr-state-decl in that these won't reset state to the
+         ;; default value if it's not present as an attribute, and instead will
+         ;; keep the previous value of the state.
+         (onbeforeupdate-attr-state-decl
+          (loop for (a default) in attrs collect
+               `(setf (@ vnode state ,a)
+                      (if (not (= "undefined" (typeof (@ vnode attrs ,a))))
+                          (@ vnode attrs ,a) (@ vnode state ,a)))))
+
 
          ;; Create computed & method property declarations
          (computed-decl
@@ -410,8 +422,11 @@
 
          ;; Lifecycle methods
          ,@(if onupdate `(onupdate (lambda (vnode) ,@onupdate)))
-         ,@(if onbeforeupdate `(onbeforeupdate (lambda (vnode) ,@onbeforeupdate)))
          ,@(if onremove `(onremove (lambda (vnode) ,@onremove)))
+
+         onbeforeupdate (lambda (vnode)
+                          ,@onbeforeupdate-attr-state-decl
+                          ,(if onbeforeupdate (progn onbeforeupdate) t))
 
          onbeforeremove
          (lambda (vnode)
@@ -438,7 +453,7 @@
            ,@oncreate)
 
          oninit (lambda (vnode)
-                  ,@attr-state-decl
+                  ,@oninit-attr-state-decl
                   ,@(loop for (k v) in state collect `(setf (@ vnode state ,k) ,v))
                   ,@oninit)
          view
