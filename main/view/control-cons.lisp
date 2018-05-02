@@ -7,23 +7,32 @@
   a loop control cons, this is undefined behaviour."
   (if (not (string= (string-downcase (second c)) "for"))
       (error 'control-cons-parse-error :text "Expected 'for' in !loop control"))
-  (if (not (string= (string-downcase (fourth c)) "in"))
+  (if (not (or (string= (string-downcase (fourth c)) "in")
+               (string= (string-downcase (fifth c)) "in")))
       (error 'control-cons-parse-error :text "Expected 'in' in !loop control"))
-  (let* ((binding (string (third c)))
-        ;; Lookup the target of the loop in the symbol list
-        (target (fifth c))
-        ;; Get the 'rest' of the list
-         (body (nthcdr 5 c))
-         (symbol-table `(,(intern (format nil "{~a}" binding) :keyword) (! item))))
+  (let* ((binds-ix (string= (string-downcase (fifth c)) "in"))
+         (binding (string (third c)))
+         (ix-binding (if binds-ix (string (fourth c))))
+         ;; Lookup the target of the loop in the symbol list
+         (target (if binds-ix (sixth c) (fifth c)))
+         ;; Get the 'rest' of the list
+         (body (if binds-ix (nthcdr 6 c) (nthcdr 5 c)))
+         (symbol-table `(,(intern (format nil "{~a}" binding) :keyword) (! item) .
+                          ,(if binds-ix
+                               `(,(intern (format nil "{~a}" ix-binding) :keyword)
+                                  (! ix))))))
     `((!
        (let ((elements (array)))
-         (loop for item in ,target do
-              ,(cons 'progn
-                     (loop for b in body collect
-                          `(chain elements
-                                  (push
-                                   ,(render (expand-all-control-structures
-                                             (expand-with-symbol-table b symbol-table))))))))
+         (loop for -item in ,target for -ix from 0 to (@ ,target length)
+            do
+              ;; Let binding is for js function scope closures
+              (let ((ix -ix) (item -item))
+                ,(cons 'progn
+                       (loop for b in body collect
+                            `(chain elements
+                                    (push
+                                     ,(render (expand-all-control-structures
+                                               (expand-with-symbol-table b symbol-table)))))))))
          elements)))))
 
 (defun expand-model-control (c)
