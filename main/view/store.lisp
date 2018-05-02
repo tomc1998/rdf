@@ -18,10 +18,10 @@
   The name is the name of the field - if name is 'foo', you can access this
   property with {!store.foo}. If name is 'foo.bar', you can access that property
   with {!store.foo.bar}."
-  (push `(lambda () ,@(expand-all-ps-injects
-                       (expand-with-symbol-table body '(:{!store} (! (@ window store))))))
-        *store-computed*)
-  (push (intern (string name) :keyword) *store-computed*))
+  (setf (getf *store-computed* (intern (string name) :keyword))
+        `(lambda () ,@(expand-all-ps-injects
+                       (expand-with-symbol-table body '(:{!store} (! (@ window store)))))))
+  )
 
 (defun add-store-action (name params &rest body)
   "Add an action to the store. An action is some code which by convention will
@@ -35,7 +35,7 @@
   (add-store-action 'fetch-data (page) '(app-req \"/fetch-data\" (array page)))
   This adds a store action called 'fetch-data', which called the '/fetch-data'
   app-req and passes in the given page number. "
-  (push `(lambda (,@params) ,@(expand-all-ps-injects
-                               (expand-with-symbol-table body '(:{!store} (! (@ window store))))))
-        *store-actions*)
-  (push name *store-actions*))
+  (setf (getf *store-actions* (intern (string name) :keyword))
+        `(lambda () ,@(expand-all-ps-injects
+                       (expand-with-symbol-table body '(:{!store} (! (@ window store)))))))
+  )

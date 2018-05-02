@@ -154,7 +154,9 @@ to another page, and navigate to a login page."
                   req
                   (then
                    (lambda (res)
-                     (callback (chain *json* (parse (@ res response-text))) (@ res status))))))
+                     (if callback
+                         (callback (chain *json* (parse (@ res response-text)))
+                                   (@ res status)))))))
                 (setf
                  req
                  (chain
