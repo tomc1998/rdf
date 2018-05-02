@@ -16,7 +16,7 @@
   (gen-form
    'auto-login-form
    `(((email "Email" :required t :type "email" placeholder "Enter your email here"))
-     ((password "Password" :required t :type "password" placeholder "Enter your  here")))
+     ((pass "Password" :required t :type "password" placeholder "Enter your  here")))
    `(app-req "/rdf/login" obj ,*auto-login-form-callback*)
    ))
 
@@ -28,7 +28,7 @@
    `(,@(loop for f in fields
           collect (list (list (car f) (kebab-to-readable (string (car f))) :required t)))
        ((email "Email" :required t :type "email" placeholder "Enter your email here"))
-       ((password "Password" :required t :type "password" placeholder "Enter your password here"))
+       ((pass "Password" :required t :type "password" placeholder "Enter your password here"))
        ((confirm-password "Confirm Password" :required t :type "password" placeholder "Enter your password again"))
        )
    `(app-req "/rdf/register" (array obj obj) ,*auto-reg-form-callback*)
