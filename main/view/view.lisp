@@ -8,6 +8,8 @@
 (defparameter *default-error-component* (defcomp () '(div {!store.rdf-app-error})))
 (defparameter *error-component* *default-error-component*)
 
+(defpsmacro ! (&rest body) `(progn ,@body))
+
 (defun register-lass (name lass)
   "Register the given LASS (lisp css) rules to the given name. If the name has
 already been used, this removes the lass bound to that name. Use clear-lass to
