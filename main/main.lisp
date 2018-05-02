@@ -26,11 +26,11 @@
     (setf (hunchentoot:content-type*) "text/html")
     (format nil "<html>
       <head>
-        <link rel=\"stylesheet\" href=\"/rdf/lib.css\" type=\"text/css\">
-        <link rel=\"stylesheet\" href=\"/rdf/style.css\" type=\"text/css\">
         ~{
           <link rel=\"stylesheet\" href=\"~a\" type=\"text/css\">
         ~}
+        <link rel=\"stylesheet\" href=\"/rdf/lib.css\" type=\"text/css\">
+        <link rel=\"stylesheet\" href=\"/rdf/style.css\" type=\"text/css\">
       </head>
       <body>
         <div id=\"rdf-content\"></div>
