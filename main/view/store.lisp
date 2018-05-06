@@ -35,7 +35,8 @@
   (add-store-action 'fetch-data (page) '(app-req \"/fetch-data\" (array page)))
   This adds a store action called 'fetch-data', which called the '/fetch-data'
   app-req and passes in the given page number. "
-  (setf (getf *store-actions* (intern (string name) :keyword))
-        `(lambda () ,@(expand-all-ps-injects
-                       (expand-with-symbol-table body '(:{!store} (! (@ window store)))))))
-  )
+  (setf (getf *store-actions* name)
+        `(lambda (,@params)
+           ,@(expand-all-ps-injects
+              (expand-with-symbol-table
+               body '(:{!store} (! (@ window store))))))))
