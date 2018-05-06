@@ -3,7 +3,7 @@
   (:shadowing-import-from
    :corm entity-already-exists select-tree insert-one id insert-duplicate-error
    update-entity delete-entity delete-all check-owner-eq def-many-to-many
-   connect
+   connect disconnect
    )
   (:shadowing-import-from :hunchentoot :session-value :log-message*)
   (:export rdf-start
@@ -75,6 +75,7 @@
            check-owner-eq
            def-many-to-many
            connect
+           disconnect
            id
 
            ;; Hunchentoot session re-exports
@@ -124,8 +125,8 @@
                                                          "main/view/control-cons"))
                (:file "main/view/control-cons" :depends-on ("main/view/template"))
                (:file "main/view/auto/form")
-               (:file "main/auth/auth" :depends-on ("main/auth/form-gen"))
                (:file "main/auth/form-gen")
+               (:file "main/auth/auth" :depends-on ("main/auth/form-gen"))
                (:file "main/email" :depends-on ("main/config"))
                (:file "main/config")
                (:file "main/main"
