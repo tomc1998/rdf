@@ -14,10 +14,11 @@ to another page, and navigate to a login page."
 (defpsmacro dispatch-action (action-name &optional params callback error-callback)
   (let ((params-parsed (if (and (listp params) (eq 'array (car params)))
                            params `(array ,params))))
-   `(let ((res (chain window store-actions ,action-name (apply null ,params-parsed))))
-      ,(if callback `(chain res (then ,callback)))
-      ,(if error-callback `(chain res (then ,error-callback)))
-      )))
+    (let ((res-sym (ps-gensym "res")))
+      `(let ((,res-sym (chain window store-actions ,action-name (apply null ,params-parsed))))
+         ,(if callback `(chain ,res-sym (then ,callback)))
+         ,(if error-callback `(chain ,res-sym (then ,error-callback)))
+         ))))
 
 (defun render-lib-css ()
   "Renders a CSS library for standard classes (like fade-in / fade-out anims)"
