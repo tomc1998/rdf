@@ -64,7 +64,10 @@
     (loop for s in slots do
        ;; Get the value of the data & set it to the instance
          (let ((val (getf data (intern (string s) :keyword))))
-           (setf (slot-value e s) val)))
+           (if val
+               (setf (slot-value e s) val)
+               (if (member (intern (string s) :keyword) data)
+                   (setf (slot-value e s) 0)))))
     ;; Return the entity
     e))
 
@@ -91,6 +94,6 @@ parse that into and instance of the given entity class"
                         (sb-mop:class-direct-slots (class-of e)))))
     ;; Loop over all the slots & extract the appropriate data
     (loop for s in slots do
-         (setf res (append res (list (intern (string s) :keyword) (slot-value e s)))))
+         (progn (setf res (append res (list (intern (string s) :keyword) (slot-value e s))))))
     ;; Return the serialised value
     res))
