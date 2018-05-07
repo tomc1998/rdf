@@ -32,7 +32,7 @@
 
   (cond
     ((typep o 'string) (format nil "\"~a\"" o))
-    ((typep o 'number) (format nil "~a" o))
+    ((typep o 'number) (format nil "~$" o))
     ((typep o 'cons)
      (if (is-plist o)
          (format nil "{~{~a~^,~}}"
