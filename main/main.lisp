@@ -6,9 +6,11 @@
 (defvar *additional-stylesheet-urls* ())
 (defvar *additional-script-urls* ())
 
-(defun add-additional-stylesheet-url (url) (push url *additional-stylesheet-urls*))
+(defun add-additional-stylesheet-url (url) (setf *additional-stylesheet-urls*
+                                                 (push url *additional-stylesheet-urls*)))
 (defun clear-additional-stylesheets () (setf *additional-stylesheet-urls* ()))
-(defun add-additional-script-url (url) (push url *additional-script-urls*))
+(defun add-additional-script-url (url) (setf *additional-script-urls*
+                                             (push url *additional-script-urls*)))
 (defun clear-additional-scripts () (setf *additional-script-urls* ()))
 
 
