@@ -2,7 +2,7 @@
   (:use  "PARENSCRIPT" "COMMON-LISP")
   (:shadowing-import-from
    :corm get-conn entity-already-exists select-tree insert-one id
-   insert-duplicate-error update-entity delete-entity delete-all check-owner-eq
+   insert-duplicate-error update-all update-entity delete-entity delete-all check-owner-eq
    def-many-to-many connect disconnect
    )
   (:shadowing-import-from :hunchentoot :session-value :log-message*)
