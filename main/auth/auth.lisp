@@ -10,7 +10,7 @@
           (let ((pwd-hash (slot-value (caar users) 'pass)))
             (if (not (check-pwd (slot-value user-auth 'pass) pwd-hash))
                 (raise-app-error "Incorrect email or password" 400)))
-          (setf (session-value 'user-id) (slot-value (caar users) 'rdf::parent-user-info-id))
+          (setf (session-value 'user-id) (slot-value (caar users) 'parent-user-info-id))
           (slot-value (caar users) 'id))))))
 
 (defun setup-auth-register-endpoint ()
@@ -31,11 +31,11 @@
 
 (defun setup-auth-entities (fields &key override)
   "Called from setup-auth, sets up the database entities for the auth system"
-  (eval `(defentity rdf:user-info ,fields :override ,override))
+  (eval `(defentity user-info ,fields :override ,override))
   ;; Just assume email-password auth for the moment
-  (eval `(defentity rdf:user-auth
+  (eval `(defentity user-auth
              ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null))
-           :parents (rdf::user-info) :override ,override)))
+           :parents (user-info) :override ,override)))
 
 
 (defun setup-auth (fields &key auth-types override)
