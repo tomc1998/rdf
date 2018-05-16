@@ -18,13 +18,24 @@ remove a binding. This is to allow easy loading & overriding of various themes."
 
 (defun clear-lass (name) (setf (getf *lass-styles* name) nil))
 
-(defun register-component (name fields template)
-  "Register a component. name should be a keywords, see defcomp for fields / template docs"
+(defun register-component (name fields template &key (first nil))
+  "Register a component. name should be a keywords, see defcomp for fields / template docs.
+
+   # Dependencies
+     Due to a lack of a proper dependency tree, the 'first' key param is added.
+     If a component has no dependencies, you can declare is as 'first', meaning
+     it will be placed at the very stawrt of the list of components. All other
+     components depending on it can therefore be declared at any time and still
+     have the dependency match up. "
   (if (getf *comp-list* name)
       (setf (getf *comp-list* name) (defcomp fields template))
-      (progn
-        (push (defcomp fields template) *comp-list*)
-        (push name *comp-list*))))
+      (if first
+          (progn
+            (setf (cdr (last *comp-list*)) (list name (defcomp fields template))))
+          (progn
+            (push (defcomp fields template) *comp-list*)
+            (push name *comp-list*))))
+  )
 
 (defun create-routes (routes)
   "Return a parenscript expression for the mithril routes object, given a alist

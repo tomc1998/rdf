@@ -45,7 +45,8 @@
                               ((input.form-control ,@attribs id ,(string name) (!model ,model)))))))
                  (.my-1)))
        (.my-2)
-       ((button class "btn btn-primary" type "submit") "Submit")))))
+       ((button class "btn btn-primary" type "submit") "Submit"))
+     :first t)))
 
 (defun load-all ()
   (print "Loading bootstrap components...")

@@ -23,7 +23,8 @@
                            `(,(if label `(!array ((label for ,(string name)) ,label) (br)))
                               ((input ,@attribs id ,(string name) (!model ,model)))
                               (br))))))
-         ((button class "btn btn-primary" type "submit") "Submit")))))
+         ((button class "btn btn-primary" type "submit") "Submit"))
+       :first t)))
   )
 
 (defun gen-form (name input-groups &rest callback)

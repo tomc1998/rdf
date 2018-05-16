@@ -15,7 +15,7 @@
   email-pwd auth."
   (gen-form
    'auto-login-form
-   `(((email "Email" :required t :type "email" placeholder "Enter your email here"))
+   '(((email "Email" :required t :type "email" placeholder "Enter your email here"))
      ((pass "Password" :required t :type "password" placeholder "Enter your  here")))
    `(app-req "/rdf/login" obj ,*auto-login-form-callback*)
    ))
