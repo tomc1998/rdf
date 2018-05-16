@@ -13,6 +13,7 @@
 (defun gen-login-form ()
   "Generates a login form with gen-form - binds to rdf:auto-login-form. Assumes
   email-pwd auth."
+  (print "GEN LOGIN FORM")
   (gen-form
    'auto-login-form
    '(((email "Email" :required t :type "email" placeholder "Enter your email here"))

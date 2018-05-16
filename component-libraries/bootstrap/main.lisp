@@ -48,45 +48,44 @@
        ((button class "btn btn-primary" type "submit") "Submit"))
      :first t)))
 
-(defun load-all ()
-  (print "Loading bootstrap components...")
-  ;; Add bootstrap CSS
-  (rdf:add-additional-stylesheet-url
-   "/bs/bootstrap.css")
+(print "Loading bootstrap components...")
+;; Add bootstrap CSS
+(rdf:add-additional-stylesheet-url
+ "/bs/bootstrap.css")
 
-  ;; Add bootstrap script dependencies - JQuery, Popper, and Bootstrap
-  (rdf:add-additional-script-url
-   "/bs/jquery-slim.js")
-  (rdf:add-additional-script-url
-   "/bs/popper.js")
-  (rdf:add-additional-script-url
-   "/bs/bootstrap.js")
+;; Add bootstrap script dependencies - JQuery, Popper, and Bootstrap
+(rdf:add-additional-script-url
+ "/bs/jquery-slim.js")
+(rdf:add-additional-script-url
+ "/bs/popper.js")
+(rdf:add-additional-script-url
+ "/bs/bootstrap.js")
 
-  (rdf:define-file-handler "/bs/bootstrap.js"
-      (namestring (asdf:system-relative-pathname 'bootstrap "lib/bootstrap.js")))
-  (rdf:define-file-handler "/bs/bootstrap.css"
-      (namestring (asdf:system-relative-pathname 'bootstrap "lib/bootstrap.css")))
-  (rdf:define-file-handler "/bs/popper.js"
-      (namestring (asdf:system-relative-pathname 'bootstrap "lib/popper.js")))
-  (rdf:define-file-handler "/bs/jquery-slim.js"
-      (namestring (asdf:system-relative-pathname 'bootstrap "lib/jquery-slim.js")))
+(rdf:define-file-handler "/bs/bootstrap.js"
+    (namestring (asdf:system-relative-pathname 'bootstrap "lib/bootstrap.js")))
+(rdf:define-file-handler "/bs/bootstrap.css"
+    (namestring (asdf:system-relative-pathname 'bootstrap "lib/bootstrap.css")))
+(rdf:define-file-handler "/bs/popper.js"
+    (namestring (asdf:system-relative-pathname 'bootstrap "lib/popper.js")))
+(rdf:define-file-handler "/bs/jquery-slim.js"
+    (namestring (asdf:system-relative-pathname 'bootstrap "lib/jquery-slim.js")))
 
-  (setf rdf:*gen-form-func* #'gen-form)
+(setf rdf:*gen-form-func* #'gen-form)
 
-  ;; Load error component
-  (rdf:register-component
-   'bs-error-component
-   '(:methods ((onclick () (setf {!store.rdf-app-error} nil))))
-   `(div
-     (!if
-      {!store.rdf-app-error}
-      ((div class "container")
-       ((div class "row mt-1 justify-content-center"
-             style (create top "5px" left "5px" right "5px"
-                           position "fixed" z-index "9999"))
-        ((div class "col-sm-12 col-md-9 col-lg-6")
-         ((div class (!class "alert alert-danger"
-                             (!if {!store.rdf-app-error} "show" "hide")) role "alert")
-          {!store.rdf-app-error}
-          ((button class "ml-2 close" onclick {@onclick}) ,(code-char #x00d7)))))))))
-  (setf rdf:*error-component* 'bs-error-component))
+;; Load error component
+(rdf:register-component
+ 'bs-error-component
+ '(:methods ((onclick () (setf {!store.rdf-app-error} nil))))
+ `(div
+   (!if
+    {!store.rdf-app-error}
+    ((div class "container")
+     ((div class "row mt-1 justify-content-center"
+           style (create top "5px" left "5px" right "5px"
+                         position "fixed" z-index "9999"))
+      ((div class "col-sm-12 col-md-9 col-lg-6")
+       ((div class (!class "alert alert-danger"
+                           (!if {!store.rdf-app-error} "show" "hide")) role "alert")
+        {!store.rdf-app-error}
+        ((button class "ml-2 close" onclick {@onclick}) ,(code-char #x00d7)))))))))
+(setf rdf:*error-component* 'bs-error-component)

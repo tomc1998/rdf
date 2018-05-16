@@ -1,5 +1,5 @@
 (in-package :rdf)
-(defparameter *gen-form-func*
+(defvar *gen-form-func*
   (lambda (name input-groups &rest callback)
     (eval
      `(rdf:register-component
