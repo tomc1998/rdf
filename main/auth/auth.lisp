@@ -10,7 +10,7 @@
           (let ((pwd-hash (slot-value (caar users) 'pass)))
             (if (not (check-pwd (slot-value user-auth 'pass) pwd-hash))
                 (raise-app-error "Incorrect email or password" 400)))
-          (setf (session-value 'user-id) (slot-value (caar users) 'parent-user-info-id))
+          (setf (session-value 'user-id) (slot-value (caar users) 'rdf::parent-user-info-id))
           (slot-value (caar users) 'id))))))
 
 (defun setup-auth-register-endpoint ()
