@@ -1,33 +1,30 @@
 (in-package :rdf)
 
 (defun setup-auth-login-endpoint ()
-  (eval
-   `(define-app-req "/rdf/login" (rdf::user-auth)
-      (lambda (user-auth)
-        (let ((users (select-tree '(rdf::user-auth ()) :where
-                                  `(= (rdf::user-auth email) ,(slot-value user-auth 'email)))))
-          (if (not users) (raise-app-error "Incorrect email or password" 400))
-          (let ((pwd-hash (slot-value (caar users) 'pass)))
-            (if (not (check-pwd (slot-value user-auth 'pass) pwd-hash))
-                (raise-app-error "Incorrect email or password" 400)))
-          (setf (session-value 'user-id) (slot-value (caar users) 'rdf::parent-user-info-id))
-          (slot-value (caar users) 'id))))))
+  (define-app-req "/rdf/login" (rdf::user-auth)
+    (lambda (user-auth)
+      (let ((users (select-tree '(rdf::user-auth ()) :where
+                                `(= (rdf::user-auth email) ,(slot-value user-auth 'email)))))
+        (if (not users) (raise-app-error "Incorrect email or password" 400))
+        (let ((pwd-hash (slot-value (caar users) 'pass)))
+          (if (not (check-pwd (slot-value user-auth 'pass) pwd-hash))
+              (raise-app-error "Incorrect email or password" 400)))
+        (setf (session-value 'user-id) (slot-value (caar users) 'rdf::parent-user-info-id))
+        (slot-value (caar users) 'id)))))
 
 (defun setup-auth-register-endpoint ()
-  (eval
-   `(rdf:define-app-req "/rdf/register" (user-auth user-info)
-      (lambda (user-auth user-info)
-        (setf (slot-value user-auth 'pass) (rdf:hash-pwd (slot-value user-auth 'pass)))
-        ;; Insert both user auth and info
-        (handler-case (progn
-                        (setf (slot-value user-auth 'id) (rdf:insert-one user-auth))
-                        (log-message* :INFO "~a" (slot-value user-auth 'id))
-                        (let ((info-id (rdf:insert-one user-info)))
-                          (setf (slot-value user-auth 'rdf::parent-user-info-id) info-id)
-                          (rdf:update-entity user-auth 'rdf::parent-user-info-id))
-                        nil)
-          (rdf:insert-duplicate-error () (rdf:raise-app-error "Email taken" 400))))))
-  )
+  (rdf:define-app-req "/rdf/register" (user-auth user-info)
+    (lambda (user-auth user-info)
+      (setf (slot-value user-auth 'pass) (rdf:hash-pwd (slot-value user-auth 'pass)))
+      ;; Insert both user auth and info
+      (handler-case (progn
+                      (setf (slot-value user-auth 'id) (rdf:insert-one user-auth))
+                      (log-message* :INFO "~a" (slot-value user-auth 'id))
+                      (let ((info-id (rdf:insert-one user-info)))
+                        (setf (slot-value user-auth 'rdf::parent-user-info-id) info-id)
+                        (rdf:update-entity user-auth 'rdf::parent-user-info-id))
+                      nil)
+        (rdf:insert-duplicate-error () (rdf:raise-app-error "Email taken" 400))))))
 
 (defun setup-auth-entities (fields &key override)
   "Called from setup-auth, sets up the database entities for the auth system"
