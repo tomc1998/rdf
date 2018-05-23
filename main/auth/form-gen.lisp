@@ -1,7 +1,11 @@
 (in-package :rdf)
 
-(defvar *auto-login-form-callback* '(lambda ()))
-(defvar *auto-reg-form-callback* '(lambda ()))
+(defvar *auto-login-form-callback* '(lambda ())
+  "When changing this, make sure to call gen-login-form to have your changes
+  applied.")
+(defvar *auto-reg-form-callback* '(lambda ())
+  "When changing this, make sure to call gen-login-form to have your changes
+  applied.")
 
 (defun kebab-to-readable (s)
   "Returns a human readable string of the given kebab-case string"
@@ -12,7 +16,8 @@
 
 (defun gen-login-form ()
   "Generates a login form with gen-form - binds to rdf:auto-login-form. Assumes
-  email-pwd auth."
+  email-pwd auth.
+  When changing auto-login-form-callback, call this afterwards."
   (print "GEN LOGIN FORM")
   (gen-form
    'auto-login-form
@@ -22,8 +27,10 @@
    ))
 
 (defun gen-reg-form (fields)
-  "Generates a login form with gen-form - binds to rdf:auto-login-form. Assumes
-  email-pwd auth."
+  "Generates a reg form with gen-form - binds to rdf:auto-reg-form. Assumes
+  email-pwd auth.
+  When changing auto-reg-form-callback, call this afterwards."
+
   (gen-form
    'auto-reg-form
    `(,@(loop for f in fields

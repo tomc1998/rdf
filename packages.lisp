@@ -21,6 +21,8 @@
            setup-auth
            auto-login-form
            auto-reg-form
+           gen-login-form
+           gen-reg-form
            *auto-login-form-callback*
            *auto-reg-form-callback*
 
