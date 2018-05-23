@@ -6,10 +6,10 @@
 (intern "USER-AUTH" :rdf)
 
 (defun setup-auth-login-endpoint ()
-  (define-app-req "/rdf/login" (user-auth)
+  (define-app-req "/rdf/login" (rdf::user-auth)
     (lambda (auth)
-      (let ((users (select-tree '(user-auth ()) :where
-                                `(= (user-auth email) ,(slot-value auth 'email)))))
+      (let ((users (select-tree '(rdf::user-auth ()) :where
+                                `(= (rdf::user-auth email) ,(slot-value auth 'email)))))
         (if (not users) (raise-app-error "Incorrect email or password" 400))
         (let ((pwd-hash (slot-value (caar users) 'pass)))
           (if (not (check-pwd (slot-value auth 'pass) pwd-hash))
@@ -18,7 +18,7 @@
         (slot-value (caar users) 'id)))))
 
 (defun setup-auth-register-endpoint ()
-  (rdf:define-app-req "/rdf/register" (user-auth user-info)
+  (rdf:define-app-req "/rdf/register" (rdf::user-auth rdf::user-info)
     (lambda (auth info)
       (setf (slot-value auth 'pass) (rdf:hash-pwd (slot-value auth 'pass)))
       ;; Insert both user auth and info
