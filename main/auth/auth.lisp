@@ -2,6 +2,8 @@
 
 ;; Need to intern the names of the auth entities, so that the symbols are always
 ;; bound even if the entities haven't been created yet.
+(intern "USER-INFO" :rdf)
+(intern "USER-AUTH" :rdf)
 
 (defun setup-auth-login-endpoint ()
   (define-app-req "/rdf/login" (user-auth)
