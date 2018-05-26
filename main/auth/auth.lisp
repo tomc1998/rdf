@@ -12,7 +12,7 @@
         (let ((pwd-hash (slot-value (caar users) 'pass)))
           (if (not (check-pwd (slot-value auth 'pass) pwd-hash))
               (raise-app-error "Incorrect email or password" 400)))
-        (setf (session-value 'user-id) (slot-value (caar users) 'parent-user-info-id))
+        (setf (session-value 'user-id) (slot-value (caar users) 'corm::parent-user-info-id))
         (slot-value (caar users) 'id)))))
 
 (defun setup-auth-register-endpoint ()
@@ -25,8 +25,8 @@
             (setf (slot-value auth 'id) (insert-one auth))
             (log-message* :INFO "~a" (slot-value auth 'id))
             (let ((info-id (insert-one info)))
-              (setf (slot-value auth 'parent-user-info-id) info-id)
-              (update-entity auth 'parent-user-info-id))
+              (setf (slot-value auth 'rdf::parent-user-info-id) info-id)
+              (update-entity auth 'rdf::parent-user-info-id))
             nil)
         (insert-duplicate-error () (raise-app-error "Email taken" 400))))))
 

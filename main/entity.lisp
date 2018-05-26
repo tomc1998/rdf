@@ -50,10 +50,11 @@
   re-creating it."
   (loop for p in parents do
        (let ((parent-symbol (format nil "PARENT-~a-ID" (string-upcase p))))
-         (shadowing-import (list (intern parent-symbol :corm)) :rdf)))
+         (shadowing-import (intern parent-symbol :corm) :rdf)))
   `(progn
      (push ',name *entity-list*)
-     (corm:defentity ,name ,slots :parents ,parents :override ,override)))
+     (corm:defentity ,name ,slots :parents ,parents :override ,override)
+     ))
 
 
 (defun single-entity-from-json (entity data)

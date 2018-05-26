@@ -19,7 +19,8 @@
                (:file "main/view/auto/form")
                (:file "main/auth/form-gen")
                (:file "main/auth/auth" :depends-on ("main/auth/form-gen"
-                                                    "main/main"))
+                                                    "main/main"
+                                                    "main/entity"))
                (:file "main/email" :depends-on ("main/config"))
                (:file "main/config")
                (:file "main/main"
