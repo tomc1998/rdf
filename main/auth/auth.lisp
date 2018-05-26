@@ -6,37 +6,47 @@
 (defun setup-auth-login-endpoint ()
   (define-app-req "/rdf/login" (user-auth)
     (lambda (auth)
-      (let ((users (select-tree '(user-auth ()) :where
+      (in-package :rdf)
+      (let ((parent-user-info-id (find-symbol "PARENT-USER-INFO-ID" :rdf))
+            (users (select-tree '(user-auth ()) :where
                                 `(= (user-auth email) ,(slot-value auth 'email)))))
         (if (not users) (raise-app-error "Incorrect email or password" 400))
         (let ((pwd-hash (slot-value (caar users) 'pass)))
           (if (not (check-pwd (slot-value auth 'pass) pwd-hash))
               (raise-app-error "Incorrect email or password" 400)))
-        (setf (session-value 'user-id) (slot-value (caar users) 'corm::parent-user-info-id))
+        (setf (session-value 'rdf::user-id)
+              (slot-value (caar users) parent-user-info-id))
         (slot-value (caar users) 'id)))))
 
 (defun setup-auth-register-endpoint ()
-  (define-app-req "/rdf/register" '(user-auth user-info)
+  (define-app-req "/rdf/register" (user-auth user-info)
     (lambda (auth info)
+      (in-package :rdf)
       (setf (slot-value auth 'pass) (hash-pwd (slot-value auth 'pass)))
       ;; Insert both user auth and info
       (handler-case
           (progn
             (setf (slot-value auth 'id) (insert-one auth))
             (log-message* :INFO "~a" (slot-value auth 'id))
-            (let ((info-id (insert-one info)))
-              (setf (slot-value auth 'rdf::parent-user-info-id) info-id)
-              (update-entity auth 'rdf::parent-user-info-id))
+            (let ((info-id (insert-one info))
+                  ;; Some weird hack to do with rdf::parent-user-info-id being
+                  ;; uninterned - maybe because it was interned in an (eval)?
+                  (parent-user-info-id (find-symbol "PARENT-USER-INFO-ID" :rdf))
+                  )
+              (setf (slot-value auth parent-user-info-id) info-id)
+              (update-entity auth parent-user-info-id))
             nil)
         (insert-duplicate-error () (raise-app-error "Email taken" 400))))))
 
 (defun setup-auth-entities (fields &key override)
   "Called from setup-auth, sets up the database entities for the auth system"
-  (eval `(defentity user-info ,fields :override ,override))
+  (eval `(rdf:defentity rdf:user-info ,fields :override ,override))
   ;; Just assume email-password auth for the moment
-  (eval `(defentity user-auth
-             ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)) :parents (user-info) :override ,override)))
-
+  (eval `(progn (rdf:defentity rdf:user-auth
+              ((email "VARCHAR(256)" :not-null :unique)
+               (pass "CHAR(116)" :not-null))
+            :parents (user-info) :override ,override
+            ))))
 
 (defun setup-auth (fields &key auth-types override)
   "Setup the RDF automatic authorisation system. This adds the 'user-auth'
@@ -82,6 +92,7 @@
     :auth-types (:email-password)
   )
   "
+  (in-package :rdf)
   (if (not auth-types)
       (error "Need to provide at least 1 :auth-type when calling setup-auth"))
   (if (not (eq :email-password (car auth-types)))

@@ -48,13 +48,16 @@
 
   An optional 'override' argument can be set to T to drop the SQL table before
   re-creating it."
-  (loop for p in parents do
-       (let ((parent-symbol (format nil "PARENT-~a-ID" (string-upcase p))))
-         (shadowing-import (intern parent-symbol :corm) :rdf)))
   `(progn
      (push ',name *entity-list*)
      (corm:defentity ,name ,slots :parents ,parents :override ,override)
-     ))
+     (loop for p in ',parents do
+          (let ((parent-symbol (format nil "PARENT-~a-ID" (string-upcase p))))
+            (shadowing-import (intern parent-symbol :corm) :rdf)
+            (print (format nil "EQ IN EVAL: ~a | PARENT SYMBOL: ~a"
+                           (eq (intern parent-symbol :corm)
+                               (intern parent-symbol :rdf))
+                           parent-symbol))))))
 
 
 (defun single-entity-from-json (entity data)
