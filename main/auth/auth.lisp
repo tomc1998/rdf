@@ -2,14 +2,12 @@
 
 ;; Need to intern the names of the auth entities, so that the symbols are always
 ;; bound even if the entities haven't been created yet.
-(intern "USER-INFO" :rdf)
-(intern "USER-AUTH" :rdf)
 
 (defun setup-auth-login-endpoint ()
-  (define-app-req "/rdf/login" (rdf::user-auth)
+  (define-app-req "/rdf/login" (user-auth)
     (lambda (auth)
-      (let ((users (select-tree '(rdf::user-auth ()) :where
-                                `(= (rdf::user-auth email) ,(slot-value auth 'email)))))
+      (let ((users (select-tree '(user-auth ()) :where
+                                `(= (user-auth email) ,(slot-value auth 'email)))))
         (if (not users) (raise-app-error "Incorrect email or password" 400))
         (let ((pwd-hash (slot-value (caar users) 'pass)))
           (if (not (check-pwd (slot-value auth 'pass) pwd-hash))
@@ -18,33 +16,32 @@
         (slot-value (caar users) 'id)))))
 
 (defun setup-auth-register-endpoint ()
-  (rdf:define-app-req "/rdf/register" (rdf::user-auth rdf::user-info)
+  (define-app-req "/rdf/register" '(user-auth user-info)
     (lambda (auth info)
-      (setf (slot-value auth 'pass) (rdf:hash-pwd (slot-value auth 'pass)))
+      (setf (slot-value auth 'pass) (hash-pwd (slot-value auth 'pass)))
       ;; Insert both user auth and info
       (handler-case
           (progn
-            (setf (slot-value auth 'id) (rdf:insert-one auth))
+            (setf (slot-value auth 'id) (insert-one auth))
             (log-message* :INFO "~a" (slot-value auth 'id))
-            (let ((info-id (rdf:insert-one info)))
-              (setf (slot-value auth 'rdf::parent-user-info-id) info-id)
-              (rdf:update-entity auth 'rdf::parent-user-info-id))
+            (let ((info-id (insert-one info)))
+              (setf (slot-value auth 'parent-user-info-id) info-id)
+              (update-entity auth 'parent-user-info-id))
             nil)
-        (rdf:insert-duplicate-error () (rdf:raise-app-error "Email taken" 400))))))
+        (insert-duplicate-error () (raise-app-error "Email taken" 400))))))
 
 (defun setup-auth-entities (fields &key override)
   "Called from setup-auth, sets up the database entities for the auth system"
-  (eval `(defentity rdf::user-info ,fields :override ,override))
+  (eval `(defentity user-info ,fields :override ,override))
   ;; Just assume email-password auth for the moment
-  (eval `(defentity rdf::user-auth
-             ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null))
-           :parents (rdf::user-info) :override ,override)))
+  (eval `(defentity user-auth
+             ((email "VARCHAR(256)" :not-null :unique) (pass "CHAR(116)" :not-null)) :parents (user-info) :override ,override)))
 
 
 (defun setup-auth (fields &key auth-types override)
-  "Setup the RDF automatic authorisation system. This adds the 'rdf:user-auth'
-  and 'rdf:user-info' tables, according to the given spec. These entities can be
-  accessed with the exported rdf:user-info and rdf:user-auth symbols.
+  "Setup the RDF automatic authorisation system. This adds the 'user-auth'
+  and 'user-info' tables, according to the given spec. These entities can be
+  accessed with the exported user-info and user-auth symbols.
 
   The user-auth entity contains data used to authorise the user - email and
   password, for example.
